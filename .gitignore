@@ -1,0 +1,6 @@
+*.sh
+venv/
+__pycache__/
+elegantt.egg-info/
+build/
+dist/

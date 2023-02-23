@@ -2,12 +2,12 @@
 
 ## Overview
 
-elegant is gantt chart drawing library.
+elegantt is gantt chart drawing library.
 
 ## Usage
 
 ```
-gchart = gengantt.GenGantt( (720, 320),(255,255,255),today="2019-10-15")
+gchart = elegantt.EleGantt( (720, 320),(255,255,255),today="2019-10-15")
 gchart.set_font('ipaexg/ipaexg.ttf')
 gchart.draw_calendar()
 gchart.draw_campain("2019-10-15","2019-10-18","こんにちは")
