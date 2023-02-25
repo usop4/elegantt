@@ -4,11 +4,32 @@
 
 elegantt is gantt chart drawing library.
 
+## Install 
+
+```pip install elegantt```
+
+## Fonts Install
+
+on Ubuntsu
+```apt install fonts-noto-cjk```
+
+on RedHat/RockyLinux
+```yum install google-noto-sans-cjk-ttc-fonts.noarch```
+
 ## Usage
 
+ad command line
+
+```eleteng sample.csv```
+
+
+as library
+
 ```
-gchart = elegantt.EleGantt( (720, 320),(255,255,255),today="2019-10-15")
-gchart.set_font('ipaexg/ipaexg.ttf')
+import elegantt
+chartsize = (720,320)
+bgcolor = (255,255,255)
+gchart = elegantt.EleGantt( chartsize, bgcolor, today="2019-10-15")
 gchart.draw_calendar()
 gchart.draw_campain("2019-10-15","2019-10-18","こんにちは")
 gchart.draw_campain("2019-10-20","2019-10-23","こんにちは")

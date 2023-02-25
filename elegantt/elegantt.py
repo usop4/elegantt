@@ -4,7 +4,10 @@
 import datetime
 import sys
 import random
+import os
 from PIL import Image, ImageDraw, ImageFont
+
+import elegantt.utils
 
 class EleGantt:
 
@@ -24,10 +27,7 @@ class EleGantt:
     line_color = (0,0,0)
     holiday_color = (220,220,220)
     max_day = 14
-
-    font_regular = 'tests/ipaexg/ipaexg.ttf'
-    font_bold = 'tests/ipaexg/ipaexg.ttf'
-
+ 
     def __init__(self,size=(512,256),color=(255,255,255),today=False):
         self.im = Image.new("RGB",size,color) #(512, 256), (255, 255, 255)
         self.draw = ImageDraw.Draw(self.im)
@@ -45,6 +45,10 @@ class EleGantt:
         self.monday = self.today - datetime.timedelta(days=self.today.weekday())
 
         self.calendar_height = size[1] - self.top_margin - self.bottom_margin
+
+        self.font_regular = elegantt.utils.detectfont()
+        self.font_bold = elegantt.utils.detectfont()
+
 
     def set_font(self,regular,bold=False):
         self.font_regular = regular

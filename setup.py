@@ -27,4 +27,9 @@ setup(
         'Pillow~=9.4.0',
     ],
 
+    entry_points="""
+       [console_scripts]
+       elegantt = elegantt.command:main
+    """,
+
 )
