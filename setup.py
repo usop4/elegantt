@@ -2,11 +2,11 @@ from setuptools import setup, find_packages
 
 setup(
     name='elegantt',
-    version='0.0.1',
+    version='0.0.2',
     packages=find_packages(),
 
-    auther='Takayuki Uehara',
-    auther_email='t.uehara@gmail.com',
+    author='Takayuki Uehara',
+    author_email='t.uehara@gmail.com',
 
     url='http://github.com/usop4/elegantt',
 
