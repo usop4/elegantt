@@ -140,7 +140,8 @@ class EleGantt:
 
     def draw_calendar(self):
 
-        week_str = ['月','火','水','木','金','土','日']
+        week_str = ['Mon ','Tue','Wed','Thu','Fri','Sat','Sun']
+        #week_str = ['月','火','水','木','金','土','日']
 
         for i in range(self.max_day):
             
