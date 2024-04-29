@@ -3,6 +3,7 @@ import os
 def detectfont():
     import glob
     fontdirs = [
+        '/usr/share/fonts/opentype/noto',
         '/usr/share/fonts',
         '/Library/Fonts',
         '/System/Library/Fonts',
