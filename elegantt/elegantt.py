@@ -22,10 +22,10 @@ class EleGantt:
     box_margin = 5
     box_height = 40
     font_size = 12
-    bar_color = (128,128,128)
+    bar_color = (184,184,191)
     font_color = (0,0,0)
     line_color = (0,0,0)
-    holiday_color = (220,220,220)
+    holiday_color = (242,242,244)
     max_day = 14
  
     def __init__(self,size=(512,256),color=(255,255,255),today=False):
@@ -49,6 +49,8 @@ class EleGantt:
         self.font_regular = elegantt.utils.detectfont()
         self.font_bold = elegantt.utils.detectfont()
 
+    def get_today(self):
+        return self.today
 
     def set_font(self,regular,bold=False):
         self.font_regular = regular
@@ -56,6 +58,9 @@ class EleGantt:
             self.font_bold = bold
         else:
             self.font_bold = regular
+
+    def get_font(self):
+        return self.font_regular
 
     def get_monday(self):
         return self.monday
@@ -71,7 +76,7 @@ class EleGantt:
 
     def set_bar_width(self,width):
         self.cell_width = width
-    
+
     def set_bar_color(self,color):
         self.bar_color = color
 
@@ -195,7 +200,7 @@ class EleGantt:
 
             self.draw.multiline_text(
                 (
-                    self.left_margin + i*self.cell_width + self.cell_width/2 - self.font_size/2,
+                    self.left_margin + i*self.cell_width + self.cell_width/2 - self.font_size/2,#日付は2文字
                     self.date_position
                 ),
                 d.strftime('%d'),
@@ -204,7 +209,7 @@ class EleGantt:
             )
             self.draw.multiline_text(
                 (
-                    self.left_margin + i*self.cell_width + self.cell_width/2 - self.font_size/2,
+                    self.left_margin + i*self.cell_width + self.cell_width/2 - self.font_size,#曜日は3文字
                     self.week_position
                 ),
                 week_str[i%7],

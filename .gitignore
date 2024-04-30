@@ -3,3 +3,4 @@ __pycache__/
 elegantt.egg-info/
 build/
 dist/
+*.png

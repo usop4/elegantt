@@ -11,9 +11,9 @@ def detectfont():
         '/usr/local/share/font-*',
     ]
     fontfiles = [
+        'NotoSansCJK-Regular.ttc',
         'ipaexg.ttf',
         'DejaVuSans.ttf',
-        'NotoSansCJK-Regular.ttc',
     ]
 
     fontpath = None
@@ -24,9 +24,7 @@ def detectfont():
                 if font in files:
                     fontpath = os.path.join(root, font)
                     break
-
     return fontpath
 
-
 if __name__ == '__main__':
-    print("utils.py")
+    print("utils.py is part of elegantt.")
