@@ -5,6 +5,7 @@ import datetime
 import sys
 import random
 import os
+import re
 from PIL import Image, ImageDraw, ImageFont
 
 import elegantt.utils
@@ -22,13 +23,18 @@ class EleGantt:
     box_margin = 5
     box_height = 40
     font_size = 12
+    bg_color = (255,255,255)
     bar_color = (184,184,191)
     font_color = (0,0,0)
     line_color = (0,0,0)
     holiday_color = (242,242,244)
     max_day = 14
  
-    def __init__(self,size=(512,256),color=(255,255,255),today=False):
+    default_size = (
+        box_position + box_height * 3,
+        left_margin + cell_width * max_day + left_margin )
+
+    def __init__(self,size=default_size,color=bg_color, today=False):
         self.im = Image.new("RGB",size,color) #(512, 256), (255, 255, 255)
         self.draw = ImageDraw.Draw(self.im)
 
@@ -48,6 +54,52 @@ class EleGantt:
 
         self.font_regular = elegantt.utils.detectfont()
         self.font_bold = elegantt.utils.detectfont()
+
+    def resize(self,size=default_size,color=bg_color):
+        self.im = Image.new("RGB",size,color) #(512, 256), (255, 255, 255)
+        self.draw = ImageDraw.Draw(self.im)
+
+        self.im_width = size[0]
+        self.im_height = size[1]
+
+        self.bg_color = color
+
+    def parse_mermaid(self,str):
+        events = []
+        eid = 0
+        for line in str.splitlines():
+            if ":" in line:
+                try:
+                    title = line.split(":")[0].strip()
+                    dates = re.findall(r'\d{4}-\d{2}-\d{2}',line)
+                    duration = re.search(r'\b(\d+)(d|h)\b',line)
+                    if len(dates) == 2:
+                        start_date = datetime.datetime.strptime(dates[0],"%Y-%m-%d")
+                        end_date = datetime.datetime.strptime(dates[1],"%Y-%m-%d")
+                    if len(dates) == 1:
+                        start_date = datetime.datetime.strptime(dates[0],"%Y-%m-%d")
+                        if duration.group(2) == "d":
+                            end_date = start_date + datetime.timedelta(days=int(duration.group(1))-1)
+                        if duration.group(2) == "h":
+                            end_date = start_date + datetime.timedelta(hours=int(duration.group(1)))
+                    if len(dates) == 0 and duration is not None :
+                        start_date = events[eid-1]["end"] + datetime.timedelta(days=1)
+                        if duration.group(2) == "d":
+                            end_date = start_date + datetime.timedelta(days=int(duration.group(1))-1)
+                        if duration.group(2) == "h":
+                            end_date = start_date + datetime.timedelta(hours=int(duration.group(1)))
+                    events.append({
+                        "title" : title,
+                        "start" : start_date,
+                        "end" : end_date
+                    })
+                    eid = eid + 1
+                except Exception as e:
+                    print(e)
+                    raise
+
+        return events
+
 
     def get_today(self):
         return self.today
