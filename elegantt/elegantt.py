@@ -73,6 +73,8 @@ class EleGantt:
         if firstday:
             self.firstday = datetime.date.fromisoformat(firstday)
 
+        self.calendar_height = size[1] - self.top_margin - self.bottom_margin
+
     def parse_mermaid(self,str):
         events = []
         eid = 0
@@ -116,6 +118,37 @@ class EleGantt:
                 eid = eid + 1
 
         return events
+
+    def analyze_events(self,events):
+
+        start = datetime.datetime.max
+        end = datetime.datetime.min
+        size = len(events)
+        for event in events:
+            if event["start"] and event["start"] < start:
+                start = event["start"]
+            if event["end"] and event["end"] > end:
+                end = event["end"]
+
+        analyzed_events = {
+            "start": start,
+            "end": end,
+            "size": size
+        }
+        return analyzed_events
+
+    def auto_resize(self,events):
+        analyzed_events = self.analyze_events(events)
+        days = (analyzed_events["end"] - analyzed_events["start"]).days + 1
+
+        self.set_max_day(days)
+        height = analyzed_events["size"] * self.box_height + self.box_position + self.bottom_margin
+        width =  days * self.cell_width + 2 * self.left_margin
+        self.resize(
+            size = (width,height),
+            today = analyzed_events["start"].strftime("%Y-%m-%d"),
+            firstday = analyzed_events["start"].strftime("%Y-%m-%d")
+        )
 
     def get_today(self):
         return self.today
