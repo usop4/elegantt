@@ -34,7 +34,7 @@ class EleGantt:
         box_position + box_height * 3,
         left_margin + cell_width * max_day + left_margin )
 
-    def __init__(self,size=default_size,color=bg_color, today=False):
+    def __init__(self,size=default_size,color=bg_color, today=False, firstday=False):
         self.im = Image.new("RGB",size,color) #(512, 256), (255, 255, 255)
         self.draw = ImageDraw.Draw(self.im)
 
@@ -48,14 +48,17 @@ class EleGantt:
         else:
             self.today = datetime.date.today()
 
-        self.monday = self.today - datetime.timedelta(days=self.today.weekday())
+        if firstday:
+            self.firstday = datetime.date.fromisoformat(firstday)
+        else:
+            self.firstday = self.today - datetime.timedelta(days=self.today.weekday())
 
         self.calendar_height = size[1] - self.top_margin - self.bottom_margin
 
         self.font_regular = elegantt.utils.detectfont()
         self.font_bold = elegantt.utils.detectfont()
 
-    def resize(self,size=default_size,color=bg_color):
+    def resize(self, size=default_size, color=bg_color, today=False, firstday=False):
         self.im = Image.new("RGB",size,color) #(512, 256), (255, 255, 255)
         self.draw = ImageDraw.Draw(self.im)
 
@@ -63,6 +66,12 @@ class EleGantt:
         self.im_height = size[1]
 
         self.bg_color = color
+
+        if today:
+            self.today = datetime.date.fromisoformat(today)
+
+        if firstday:
+            self.firstday = datetime.date.fromisoformat(firstday)
 
     def parse_mermaid(self,str):
         events = []
@@ -100,9 +109,11 @@ class EleGantt:
 
         return events
 
-
     def get_today(self):
         return self.today
+    
+    def get_firstday(self):
+        return self.firstday
 
     def set_font(self,regular,bold=False):
         self.font_regular = regular
@@ -113,9 +124,6 @@ class EleGantt:
 
     def get_font(self):
         return self.font_regular
-
-    def get_monday(self):
-        return self.monday
 
     def set_box_position(self,box_position):
         self.box_position = box_position
@@ -161,12 +169,12 @@ class EleGantt:
         start_date = datetime.datetime.strptime(start,'%Y-%m-%d').date()
         end_date = datetime.datetime.strptime(end,'%Y-%m-%d').date()
 
-        start_pos = (start_date - self.monday).days
+        start_pos = (start_date - self.firstday).days
         if start_pos < 0:
             start_pos = 0
         if start_pos > self.max_day:
             start_pos = self.max_day
-        end_pos = (end_date - self.monday).days
+        end_pos = (end_date - self.firstday).days
         if end_pos > self.max_day:
             end_pos = self.max_day -1
 
@@ -202,7 +210,7 @@ class EleGantt:
 
         for i in range(self.max_day):
             
-            d = self.monday+datetime.timedelta(days=i)
+            d = self.firstday+datetime.timedelta(days=i)
 
             if d.weekday() in [5,6]: #土日は背景を灰色にする
                 self.draw.rectangle(
