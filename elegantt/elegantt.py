@@ -29,7 +29,7 @@ class EleGantt:
     line_color = (0,0,0)
     holiday_color = (242,242,244)
     max_day = 14
- 
+
     default_size = (
         box_position + box_height * 3,
         left_margin + cell_width * max_day + left_margin )
@@ -106,12 +106,20 @@ class EleGantt:
                 except Exception as e:
                     print(e)
                     raise
+            if "section" in line:
+                title = line.split("section")[1].strip()
+                events.append({
+                    "title" : title,
+                    "start" : None,
+                    "end" : None
+                })
+                eid = eid + 1
 
         return events
 
     def get_today(self):
         return self.today
-    
+
     def get_firstday(self):
         return self.firstday
 
@@ -166,39 +174,54 @@ class EleGantt:
 
     def draw_campain(self,start,end,title):
 
-        start_date = datetime.datetime.strptime(start,'%Y-%m-%d').date()
-        end_date = datetime.datetime.strptime(end,'%Y-%m-%d').date()
+        if start:
+            start_date = datetime.datetime.strptime(start,'%Y-%m-%d').date()
+        else:
+            start_date = datetime.datetime.strptime("0001-01-01",'%Y-%m-%d').date()
+
+        if end:
+            end_date = datetime.datetime.strptime(end,'%Y-%m-%d').date()
+        else:
+            end_date = datetime.datetime.strptime("0001-01-01",'%Y-%m-%d').date()
 
         start_pos = (start_date - self.firstday).days
+
         if start_pos < 0:
             start_pos = 0
+
         if start_pos > self.max_day:
             start_pos = self.max_day
-        end_pos = (end_date - self.firstday).days
-        if end_pos > self.max_day:
-            end_pos = self.max_day -1
 
-        self.draw.rectangle(
-            [
-                (
-                    start_pos * self.cell_width + self.left_margin,
-                    self.box_position + self.num * (self.box_height+self.box_margin)
-                ),
-                (
-                    (end_pos+1) * self.cell_width + self.left_margin,
-                    self.box_position + self.num * (self.box_height+self.box_margin) + self.box_height
-                )
-            ],
-            fill = self.bar_color,
-            outline = None
-        )
+        if end_date > self.firstday:
+            end_pos = (end_date - self.firstday).days
+            if end_pos > self.max_day:
+                end_pos = self.max_day -1
+        else:
+            end_pos = 0
+
+        if end_pos != 0:
+            self.draw.rectangle(
+                [
+                    (
+                        start_pos * self.cell_width + self.left_margin,
+                        self.box_position + self.num * (self.box_height+self.box_margin)
+                    ),
+                    (
+                        (end_pos+1) * self.cell_width + self.left_margin,
+                        self.box_position + self.num * (self.box_height+self.box_margin) + self.box_height
+                    )
+                ],
+                fill = self.bar_color,
+                outline = None
+            )
+
         self.draw.multiline_text(
             (
                 start_pos * self.cell_width + self.left_margin + self.font_size/4,
                 self.box_position + self.num * (self.box_height+self.box_margin) + self.font_size/2
             ),
             title,
-            fill = self.font_color, 
+            fill = self.font_color,
             font = ImageFont.truetype(self.font_regular, self.font_size)
         )
         self.num = self.num + 1
