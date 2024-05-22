@@ -167,6 +167,10 @@ class TestMain(unittest.TestCase):
     def test_command_line(self):
         elegantt.command.main(args=["sample.csv"])
 
+    def test_command_line_mermaid(self):
+        elegantt.command.main(args=["sample_mermaid.txt"])
+        self.assertEqual(Image.open("test_section.png"),Image.open("sample_mermaid.png"))
+
     # before test on ubuntu
     # sudo apt install fonts-noto-cjk
     def test_detectfont_after_init(self):

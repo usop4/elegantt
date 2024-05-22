@@ -2,42 +2,102 @@
 
 ## Overview
 
-elegantt is gantt chart drawing library.
+elegantt is gantt chart drawing library designed for developers and project managers who need to visualize project timeline efficiently. With support for both CSV and Mermaid formats. elegantt provides the flexibility and functionality you need to keep your projects on task.
 
-## Install 
+## Features
 
-```pip install elegantt```
+- Simpe and intuitive API
+- Supports both CSV and Mermaid Gantt chart formats
+- customizable chat size and colors
+- Command line interface for quick usage
+- Cross-platform support
 
-## Fonts Install
+## Installation
+
+Install elegantt via pip:
+```sh
+pip install elegantt
+```
+
+## Fonts Installation
+
+To ensure proper rendering of text, install the necessary fonts:
 
 on Ubuntsu
-```apt install fonts-noto-cjk```
+```sh
+apt install fonts-noto-cjk
+```
 
 on RedHat/RockyLinux
-```yum install google-noto-sans-cjk-ttc-fonts.noarch```
+```sh
+yum install google-noto-sans-cjk-ttc-fonts.noarch
+```
 
 ## Usage
 
-ad command line
+### Command Line interface
 
-```eleteng sample.csv```
+Generate a Gantt chart from CSV file:
 
+```sh
+eleteng sample.csv
+```
 
-as library
+CSV Format Example
+
+```txt
+2023-01-01,2023-01-04,Task 1
+2023-01-02,2023-01-05,Task 2
+2023-01-04,2023-01-06,Task 3
+```
+
+generate a Gantt chart from a Mermaid format:
+
+```sh
+eleteng sample_mermaid.txt
+```
+
+Mermaid Format Example
 
 ```
+gantt
+    section task a
+    task b            :active,  des2, 2024-05-20, 4d
+    task c            :         des3, after des2, 7d
+```
+
+### As a library
+
+integrate elegantt into your python projects for advanced usage:
+
+```py
 import elegantt
+
+# Define chart properties
 chartsize = (720,320)
 bgcolor = (255,255,255)
+
+# Create a Gant chart object
 gchart = elegantt.EleGantt( chartsize, bgcolor, today="2019-10-15")
+
+# Draw calendar and campains
 gchart.draw_calendar()
-gchart.draw_campain("2019-10-15","2019-10-18","こんにちは")
-gchart.draw_campain("2019-10-20","2019-10-23","こんにちは")
-gchart.draw_campain("2019-10-24","2019-10-30","こんにちは")
-gchart.save("test_basic_1.png")
+gchart.draw_campain("2019-10-15","2019-10-18","Task 1")
+gchart.draw_campain("2019-10-20","2019-10-23","Task 2")
+gchart.draw_campain("2019-10-24","2019-10-30","Task 3")
+gchart.save("gantt_chart.png")
 ```
 
-# Lisence
+## Lisence
 
 This project is licensed under the MIT License, see the LICENSE.txt file for details
+
+## Contributing
+
+We welcome contributions!
+
+## Support
+
+For support or any questions, feel free to open an issue on our Github page.
+
 
