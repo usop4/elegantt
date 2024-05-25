@@ -328,8 +328,9 @@ class EleGantt:
                     self.left_margin + i*self.cell_width + self.cell_width/2 - self.font_size,#曜日は3文字
                     self.week_position
                 ),
-                week_str[i%7],
-                fill=self.font_color, 
+                #week_str[i%7],
+                week_str[d.weekday()],
+                fill=self.font_color,
                 font=font
             )
 
