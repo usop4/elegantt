@@ -24,7 +24,7 @@ setup(
     ],
 
     install_requires=[
-        'Pillow~=9.4.0',
+        'Pillow>=9.4,<10.4',
     ],
 
     entry_points="""
