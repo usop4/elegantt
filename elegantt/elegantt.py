@@ -5,6 +5,7 @@ import datetime
 import sys
 import random
 import os
+import re
 from PIL import Image, ImageDraw, ImageFont
 
 import elegantt.utils
@@ -22,13 +23,18 @@ class EleGantt:
     box_margin = 5
     box_height = 40
     font_size = 12
+    bg_color = (255,255,255)
     bar_color = (184,184,191)
     font_color = (0,0,0)
     line_color = (0,0,0)
     holiday_color = (242,242,244)
     max_day = 14
- 
-    def __init__(self,size=(512,256),color=(255,255,255),today=False):
+
+    default_size = (
+        box_position + box_height * 3,
+        left_margin + cell_width * max_day + left_margin )
+
+    def __init__(self,size=default_size,color=bg_color, today=False, firstday=False):
         self.im = Image.new("RGB",size,color) #(512, 256), (255, 255, 255)
         self.draw = ImageDraw.Draw(self.im)
 
@@ -42,15 +48,113 @@ class EleGantt:
         else:
             self.today = datetime.date.today()
 
-        self.monday = self.today - datetime.timedelta(days=self.today.weekday())
+        if firstday:
+            self.firstday = datetime.date.fromisoformat(firstday)
+        else:
+            self.firstday = self.today - datetime.timedelta(days=self.today.weekday())
 
         self.calendar_height = size[1] - self.top_margin - self.bottom_margin
 
         self.font_regular = elegantt.utils.detectfont()
         self.font_bold = elegantt.utils.detectfont()
 
+    def resize(self, size=default_size, color=bg_color, today=False, firstday=False):
+        self.im = Image.new("RGB",size,color) #(512, 256), (255, 255, 255)
+        self.draw = ImageDraw.Draw(self.im)
+
+        self.im_width = size[0]
+        self.im_height = size[1]
+
+        self.bg_color = color
+
+        if today:
+            self.today = datetime.date.fromisoformat(today)
+
+        if firstday:
+            self.firstday = datetime.date.fromisoformat(firstday)
+
+        self.calendar_height = size[1] - self.top_margin - self.bottom_margin
+
+    def parse_mermaid(self,str):
+        events = []
+        eid = 0
+        for line in str.splitlines():
+            if ":" in line:
+                try:
+                    title = line.split(":")[0].strip()
+                    dates = re.findall(r'\d{4}-\d{2}-\d{2}',line)
+                    duration = re.search(r'\b(\d+)(d|h)\b',line)
+                    if len(dates) == 2:
+                        start_date = datetime.datetime.strptime(dates[0],"%Y-%m-%d")
+                        end_date = datetime.datetime.strptime(dates[1],"%Y-%m-%d")
+                    if len(dates) == 1:
+                        start_date = datetime.datetime.strptime(dates[0],"%Y-%m-%d")
+                        if duration.group(2) == "d":
+                            end_date = start_date + datetime.timedelta(days=int(duration.group(1))-1)
+                        if duration.group(2) == "h":
+                            end_date = start_date + datetime.timedelta(hours=int(duration.group(1)))
+                    if len(dates) == 0 and duration is not None :
+                        start_date = events[eid-1]["end"] + datetime.timedelta(days=1)
+                        if duration.group(2) == "d":
+                            end_date = start_date + datetime.timedelta(days=int(duration.group(1))-1)
+                        if duration.group(2) == "h":
+                            end_date = start_date + datetime.timedelta(hours=int(duration.group(1)))
+                    events.append({
+                        "title" : title,
+                        "start" : start_date,
+                        "end" : end_date
+                    })
+                    eid = eid + 1
+                except Exception as e:
+                    print(e)
+                    raise
+            if "section" in line:
+                title = line.split("section")[1].strip()
+                events.append({
+                    "title" : title,
+                    "start" : None,
+                    "end" : None
+                })
+                eid = eid + 1
+
+        return events
+
+    def analyze_events(self,events):
+
+        start = datetime.datetime.max
+        end = datetime.datetime.min
+        size = len(events)
+        for event in events:
+            if event["start"] and event["start"] < start:
+                start = event["start"]
+            if event["end"] and event["end"] > end:
+                end = event["end"]
+
+        analyzed_events = {
+            "start": start,
+            "end": end,
+            "size": size
+        }
+        return analyzed_events
+
+    def auto_resize(self,events):
+        analyzed_events = self.analyze_events(events)
+        days = (analyzed_events["end"] - analyzed_events["start"]).days + 1
+
+        self.set_max_day(days)
+        height = analyzed_events["size"] * self.box_height + self.box_position + self.bottom_margin
+        width =  days * self.cell_width + 2 * self.left_margin
+        self.resize(
+            size = (width,height),
+            today = analyzed_events["start"].strftime("%Y-%m-%d"),
+            firstday = analyzed_events["start"].strftime("%Y-%m-%d")
+        )
+
     def get_today(self):
         return self.today
+
+    def get_firstday(self):
+        return self.firstday
 
     def set_font(self,regular,bold=False):
         self.font_regular = regular
@@ -61,9 +165,6 @@ class EleGantt:
 
     def get_font(self):
         return self.font_regular
-
-    def get_monday(self):
-        return self.monday
 
     def set_box_position(self,box_position):
         self.box_position = box_position
@@ -106,39 +207,54 @@ class EleGantt:
 
     def draw_campain(self,start,end,title):
 
-        start_date = datetime.datetime.strptime(start,'%Y-%m-%d').date()
-        end_date = datetime.datetime.strptime(end,'%Y-%m-%d').date()
+        if start:
+            start_date = datetime.datetime.strptime(start,'%Y-%m-%d').date()
+        else:
+            start_date = datetime.datetime.strptime("0001-01-01",'%Y-%m-%d').date()
 
-        start_pos = (start_date - self.monday).days
+        if end:
+            end_date = datetime.datetime.strptime(end,'%Y-%m-%d').date()
+        else:
+            end_date = datetime.datetime.strptime("0001-01-01",'%Y-%m-%d').date()
+
+        start_pos = (start_date - self.firstday).days
+
         if start_pos < 0:
             start_pos = 0
+
         if start_pos > self.max_day:
             start_pos = self.max_day
-        end_pos = (end_date - self.monday).days
-        if end_pos > self.max_day:
-            end_pos = self.max_day -1
 
-        self.draw.rectangle(
-            [
-                (
-                    start_pos * self.cell_width + self.left_margin,
-                    self.box_position + self.num * (self.box_height+self.box_margin)
-                ),
-                (
-                    (end_pos+1) * self.cell_width + self.left_margin,
-                    self.box_position + self.num * (self.box_height+self.box_margin) + self.box_height
-                )
-            ],
-            fill = self.bar_color,
-            outline = None
-        )
+        if end_date > self.firstday:
+            end_pos = (end_date - self.firstday).days
+            if end_pos > self.max_day:
+                end_pos = self.max_day -1
+        else:
+            end_pos = 0
+
+        if end_pos != 0:
+            self.draw.rectangle(
+                [
+                    (
+                        start_pos * self.cell_width + self.left_margin,
+                        self.box_position + self.num * (self.box_height+self.box_margin)
+                    ),
+                    (
+                        (end_pos+1) * self.cell_width + self.left_margin,
+                        self.box_position + self.num * (self.box_height+self.box_margin) + self.box_height
+                    )
+                ],
+                fill = self.bar_color,
+                outline = None
+            )
+
         self.draw.multiline_text(
             (
                 start_pos * self.cell_width + self.left_margin + self.font_size/4,
                 self.box_position + self.num * (self.box_height+self.box_margin) + self.font_size/2
             ),
             title,
-            fill = self.font_color, 
+            fill = self.font_color,
             font = ImageFont.truetype(self.font_regular, self.font_size)
         )
         self.num = self.num + 1
@@ -150,7 +266,7 @@ class EleGantt:
 
         for i in range(self.max_day):
             
-            d = self.monday+datetime.timedelta(days=i)
+            d = self.firstday+datetime.timedelta(days=i)
 
             if d.weekday() in [5,6]: #土日は背景を灰色にする
                 self.draw.rectangle(
