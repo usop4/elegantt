@@ -14,9 +14,11 @@ fi
 cd elegantt/tests
 
 if [ "$1" = "--simple" ]; then
-    python3 -m unittest test_simple.TestSimple
+    #python3 -m unittest test_simple.TestSimple
+    pytest test_simple.py
 else
-    python3 -m unittest
+    #python3 -m unittest
+    pytest
 fi
 
 
