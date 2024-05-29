@@ -75,6 +75,45 @@ class EleGantt:
 
         self.calendar_height = size[1] - self.top_margin - self.bottom_margin
 
+
+    def parse_markdown(self,str):
+        events = []
+        eid = 0
+        for line in str.splitlines():
+            if "|" in line:
+                try:
+                    title = line.split("|")[3].strip()
+                    dates = re.findall(r'\d{4}-\d{2}-\d{2}',line)
+                    duration = re.search(r'\b(\d+)(d|h)\b',line)
+                    if len(dates) == 2:
+                        start_date = datetime.datetime.strptime(dates[0],"%Y-%m-%d")
+                        end_date = datetime.datetime.strptime(dates[1],"%Y-%m-%d")
+                    if len(dates) == 1:
+                        start_date = datetime.datetime.strptime(dates[0],"%Y-%m-%d")
+                        if duration.group(2) == "d":
+                            end_date = start_date + datetime.timedelta(days=int(duration.group(1))-1)
+                        if duration.group(2) == "h":
+                            end_date = start_date + datetime.timedelta(hours=int(duration.group(1)))
+                    if len(dates) == 0 and duration is not None :
+                        start_date = events[eid-1]["end"] + datetime.timedelta(days=1)
+                        if duration.group(2) == "d":
+                            end_date = start_date + datetime.timedelta(days=int(duration.group(1))-1)
+                        if duration.group(2) == "h":
+                            end_date = start_date + datetime.timedelta(hours=int(duration.group(1)))
+                    if len(dates) == 0 and duration is None :
+                        start_date = None
+                        end_date = None
+                    events.append({
+                        "title" : title,
+                        "start" : start_date,
+                        "end" : end_date
+                    })
+                    eid = eid + 1
+                except Exception as e:
+                    print(e)
+                    raise
+        return events
+    
     def parse_mermaid(self,str):
         events = []
         eid = 0
@@ -99,6 +138,7 @@ class EleGantt:
                             end_date = start_date + datetime.timedelta(days=int(duration.group(1))-1)
                         if duration.group(2) == "h":
                             end_date = start_date + datetime.timedelta(hours=int(duration.group(1)))
+                    
                     events.append({
                         "title" : title,
                         "start" : start_date,

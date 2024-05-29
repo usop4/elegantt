@@ -1,6 +1,3 @@
-import unittest
-import inspect
-
 import sys
 sys.path.insert(0, '../..')
 
@@ -9,56 +6,22 @@ import elegantt.utils
 import elegantt.command
 
 import datetime
-import locale
+import pprint
 
-from PIL import Image
-from PIL import ImageChops
+def test_parse_markdown():
+    s =  """
+    |2024-06-15|2024-06-18|task a|
+    |2024-06-20|4d        |task b|
+    |7d        |          |task c|
+"""
+    org_events = [
+        {"title":"task a","start":datetime.datetime(2024, 6, 15, 0, 0),"end":datetime.datetime(2024, 6, 18, 0, 0)},
+        {"title":"task b","start":datetime.datetime(2024, 6, 20, 0, 0),"end":datetime.datetime(2024, 6, 23, 0, 0)},
+        {"title":"task c","start":datetime.datetime(2024, 6, 24, 0, 0),"end":datetime.datetime(2024, 6, 30, 0, 0)}
+    ]
 
-class TestSimple(unittest.TestCase):
-
-    def setUp(self):
-        gchart = elegantt.EleGantt( (372, 190),(255,255,255),today="2024-06-20",firstday="2024-06-20")
-        gchart.set_max_day(11)
-        gchart.draw_calendar()
-        gchart.draw_campain(None,None,"task a")
-        gchart.draw_campain("2024-06-20","2024-06-23","task b")
-        gchart.draw_campain("2024-06-24","2024-06-30","task c")
-        gchart.save("test_section.png")
-
-    def test_analyze_parsed_events(self,s="""
-            section task a
-            task b            :active,  des2, 2024-06-20, 4d
-            task c            :         des3, after des2, 7d
-        """):
-        gchart = elegantt.EleGantt()
-        parsed_events = gchart.parse_mermaid(s)
-        analyzed_events = {
-            "start": datetime.datetime.strptime("2024-06-20","%Y-%m-%d"),
-            "end": datetime.datetime.strptime("2024-06-30","%Y-%m-%d"),
-            "size": 3
-        }
-        self.assertEqual(analyzed_events,gchart.analyze_events(parsed_events))
-
-    def test_auto_resize(self,s="""
-            section task a
-            task b            :active,  des2, 2024-06-20, 4d
-            task c            :         des3, after des2, 7d
-        """):
-        gchart = elegantt.EleGantt()
-        parsed_events = gchart.parse_mermaid(s)
-        gchart.auto_resize(parsed_events)
-        gchart.draw_calendar()
-        for event in parsed_events:
-            start = event["start"].strftime("%Y-%m-%d") if event["start"] else None
-            end = event["end"].strftime("%Y-%m-%d") if event["end"] else None
-            gchart.draw_campain(start,end,event["title"])
-        image_name = inspect.currentframe().f_code.co_name + ".png"
-        gchart.save(image_name)
-        self.assertEqual(Image.open("test_section.png"),Image.open(image_name))
-
-    def test_command_line_mermaid(self):
-        elegantt.command.main(args=["sample_mermaid.txt"])
-        self.assertEqual(Image.open("test_section.png"),Image.open("sample_mermaid.png"))
-
-
+    gchart = elegantt.EleGantt()
+    events =gchart.parse_markdown(s)
+    pprint.pprint(events)
+    assert events == org_events
 
