@@ -3,12 +3,10 @@
 
 import random
 import re
-
 import pandas as pd
-
 from PIL import Image, ImageDraw, ImageFont
-
 import elegantt.utils
+
 
 class EleGantt:
 
@@ -23,16 +21,24 @@ class EleGantt:
     box_margin = 5
     box_height = 40
     font_size = 12
-    bg_color = (255, 255, 255)
-    bar_color = (184, 184, 191)
-    font_color = (0, 0, 0)
-    line_color = (0, 0, 0)
-    holiday_color = (242, 242, 244)
+
+    max_events = 5
+
+    min_day = 14
     max_day = 14
 
     default_size = (
-        box_position + box_height * 3,
-        left_margin + cell_width * max_day + left_margin)
+        left_margin + cell_width * max_day + left_margin,
+        box_position + (box_height + box_margin) * max_events + bottom_margin,
+    )
+
+    bg_color = (255, 255, 255)
+    bar_color = (180, 180, 180)
+    font_color = (0, 0, 0)
+    line_color = (0, 0, 0)
+    holiday_color = (210, 210, 210)
+
+    holidays = []
 
     def __init__(self, size=default_size, color=bg_color, today=False, firstday=False):
         self.im = Image.new("RGB", size, color)
@@ -53,8 +59,7 @@ class EleGantt:
         else:
             self.firstday = self.today - pd.Timedelta(days=self.today.dayofweek)
 
-
-        self.calendar_height = size[1] - self.top_margin - self.bottom_margin
+        self.calendar_height = self.im_height - self.top_margin - self.bottom_margin
 
         self.font_regular = elegantt.utils.detectfont()
         self.font_bold = elegantt.utils.detectfont()
@@ -74,18 +79,26 @@ class EleGantt:
         if firstday:
             self.firstday = pd.Timestamp(firstday)
 
-        self.calendar_height = size[1] - self.top_margin - self.bottom_margin
+        self.calendar_height = self.im_height - self.top_margin - self.bottom_margin
 
+    def set_holidays(self, holidays):
+        self.holidays = holidays
 
-    def parse_markdown(self,str):
+    def get_holidays(self):
+        return self.holidays
+
+    def parse_markdown(self, str):
         events = []
         eid = 0
+        custom_business_day = pd.tseries.offsets.CustomBusinessDay(
+            holidays=pd.to_datetime(self.holidays)
+        )
         for line in str.splitlines():
             if "|" in line:
                 try:
                     title = line.split("|")[3].strip()
-                    dates = re.findall(r'\d{4}-\d{2}-\d{2}', line)
-                    duration = re.search(r'\b(\d+)(d|h)\b', line)
+                    dates = re.findall(r"\d{4}-\d{2}-\d{2}", line)
+                    duration = re.search(r"\b(\d+)(d|h)\b", line)
 
                     if len(dates) == 2:
                         start_date = pd.Timestamp(dates[0])
@@ -94,21 +107,23 @@ class EleGantt:
                     if len(dates) == 1:
                         start_date = pd.Timestamp(dates[0])
                         if duration.group(2) == "d":
-                            end_date = start_date + pd.offsets.BusinessDay(n=int(duration.group(1))-1)
+                            end_date = start_date + custom_business_day * (
+                                int(duration.group(1)) - 1
+                            )
 
                     if len(dates) == 0 and duration is not None:
-                        start_date = events[eid-1]["end"] + pd.offsets.BusinessDay(n=1)
+                        start_date = events[eid - 1]["end"] + custom_business_day * 1
                         if duration.group(2) == "d":
-                            end_date = start_date + pd.offsets.BusinessDay(n=int(duration.group(1))-1)
+                            end_date = start_date + custom_business_day * (
+                                int(duration.group(1)) - 1
+                            )
 
                     if len(dates) == 0 and duration is None:
                         start_date = None
                         end_date = None
-                    events.append({
-                        "title": title,
-                        "start": start_date,
-                        "end": end_date
-                    })
+                    events.append(
+                        {"title": title, "start": start_date, "end": end_date}
+                    )
                     eid = eid + 1
                 except Exception as e:
                     print(e)
@@ -118,12 +133,15 @@ class EleGantt:
     def parse_mermaid(self, str):
         events = []
         eid = 0
+        custom_business_day = pd.tseries.offsets.CustomBusinessDay(
+            holidays=pd.to_datetime(self.holidays)
+        )
         for line in str.splitlines():
             if ":" in line:
                 try:
                     title = line.split(":")[0].strip()
-                    dates = re.findall(r'\d{4}-\d{2}-\d{2}', line)
-                    duration = re.search(r'\b(\d+)(d|h)\b', line)
+                    dates = re.findall(r"\d{4}-\d{2}-\d{2}", line)
+                    duration = re.search(r"\b(\d+)(d|h)\b", line)
 
                     if len(dates) == 2:
                         start_date = pd.Timestamp(dates[0])
@@ -132,29 +150,27 @@ class EleGantt:
                     if len(dates) == 1:
                         start_date = pd.Timestamp(dates[0])
                         if duration.group(2) == "d":
-                            end_date = start_date + pd.offsets.BusinessDay(n=int(duration.group(1))-1)
+                            end_date = start_date + custom_business_day * (
+                                int(duration.group(1)) - 1
+                            )
 
                     if len(dates) == 0 and duration is not None:
-                        start_date = events[eid-1]["end"] + pd.offsets.BusinessDay(n=1)
+                        start_date = events[eid - 1]["end"] + custom_business_day * 1
                         if duration.group(2) == "d":
-                            end_date = start_date + pd.offsets.BusinessDay(n=int(duration.group(1))-1)
+                            end_date = start_date + custom_business_day * (
+                                int(duration.group(1)) - 1
+                            )
 
-                    events.append({
-                        "title": title,
-                        "start": start_date,
-                        "end": end_date
-                    })
+                    events.append(
+                        {"title": title, "start": start_date, "end": end_date}
+                    )
                     eid = eid + 1
                 except Exception as e:
                     print(e)
                     raise
             if "section" in line:
                 title = line.split("section")[1].strip()
-                events.append({
-                    "title": title,
-                    "start": None,
-                    "end": None
-                })
+                events.append({"title": title, "start": None, "end": None})
                 eid = eid + 1
 
         return events
@@ -170,25 +186,39 @@ class EleGantt:
             if event["end"] and event["end"] > end:
                 end = event["end"]
 
-        analyzed_events = {
-            "start": start,
-            "end": end,
-            "size": size
-        }
+        analyzed_events = {"start": start, "end": end, "size": size}
         return analyzed_events
 
     def auto_resize(self, events):
         analyzed_events = self.analyze_events(events)
         days = (analyzed_events["end"] - analyzed_events["start"]).days + 1
 
-        self.set_max_day(days)
-        height = analyzed_events["size"] * self.box_height + self.box_position + self.bottom_margin
-        width = days * self.cell_width + 2 * self.left_margin
+        if days > self.min_day:
+            self.set_max_day(days)
+        else:
+            days = self.max_day
+
+        if analyzed_events["size"] > self.max_events:
+            self.max_events = analyzed_events["size"]
+
+        width = self.calc_width()
+        height = self.calc_height()
+
         self.resize(
             size=(width, height),
             today=analyzed_events["start"].strftime("%Y-%m-%d"),
-            firstday=analyzed_events["start"].strftime("%Y-%m-%d")
+            firstday=analyzed_events["start"].strftime("%Y-%m-%d"),
         )
+
+    def calc_height(self):
+        return (
+            self.max_events * (self.box_height + self.box_margin)
+            + self.box_position
+            + self.bottom_margin
+        )
+
+    def calc_width(self):
+        return self.max_day * self.cell_width + 2 * self.left_margin
 
     def get_today(self):
         return self.today
@@ -277,76 +307,84 @@ class EleGantt:
                 [
                     (
                         start_pos * self.cell_width + self.left_margin,
-                        self.box_position + self.num * (self.box_height+self.box_margin)
+                        self.box_position
+                        + self.num * (self.box_height + self.box_margin),
                     ),
                     (
-                        (end_pos+1) * self.cell_width + self.left_margin,
-                        self.box_position + self.num * (self.box_height+self.box_margin) + self.box_height
-                    )
+                        (end_pos + 1) * self.cell_width + self.left_margin,
+                        self.box_position
+                        + self.num * (self.box_height + self.box_margin)
+                        + self.box_height,
+                    ),
                 ],
                 fill=self.bar_color,
-                outline=None
+                outline=None,
             )
 
         self.draw.multiline_text(
             (
-                start_pos * self.cell_width + self.left_margin + self.font_size/4,
-                self.box_position + self.num * (self.box_height+self.box_margin) + self.font_size/2
+                start_pos * self.cell_width + self.left_margin + self.font_size / 4,
+                self.box_position
+                + self.num * (self.box_height + self.box_margin)
+                + self.font_size / 2,
             ),
             title,
             fill=self.font_color,
-            font=ImageFont.truetype(self.font_regular, self.font_size)
+            font=ImageFont.truetype(self.font_regular, self.font_size),
         )
         self.num = self.num + 1
 
     def draw_calendar(self):
 
-        week_str = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        week_str = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         # week_str = ['月','火','水','木','金','土','日']
 
         for i in range(self.max_day):
 
             d = self.firstday + pd.offsets.DateOffset(n=i)
 
-            if d.weekday() in [5, 6]:   # 土日は背景を灰色にする
+            if (
+                d.weekday() in [5, 6] or d.strftime("%Y-%m-%d") in self.holidays
+            ):  # 土日と祝日は背景を灰色にする
                 self.draw.rectangle(
                     [
                         (
-                            self.left_margin + i*self.cell_width,
-                            self.top_margin - self.font_size
+                            self.left_margin + i * self.cell_width,
+                            self.top_margin,
                         ),
                         (
-                            self.left_margin + (i+1)*self.cell_width,
-                            self.top_margin + self.calendar_height
-                        )
+                            self.left_margin + (i + 1) * self.cell_width,
+                            self.top_margin + self.calendar_height,
+                        ),
                     ],
                     fill=self.holiday_color,
-                    outline=None
+                    outline=None,
                 )
             else:
                 self.draw.rectangle(
                     [
                         (
-                            self.left_margin + i*self.cell_width,
-                            self.top_margin - self.font_size
+                            self.left_margin + i * self.cell_width,
+                            self.top_margin - self.font_size,
                         ),
                         (
-                            self.left_margin + (i+1)*self.cell_width,
-                            self.top_margin + self.calendar_height
-                        )
+                            self.left_margin + (i + 1) * self.cell_width,
+                            self.top_margin + self.calendar_height,
+                        ),
                     ],
                     fill=self.bg_color,
-                    outline=None
+                    outline=None,
                 )
 
             self.draw.line(
                 (
-                    self.left_margin + i*self.cell_width,
+                    self.left_margin + i * self.cell_width,
                     self.top_margin,
-                    self.left_margin + i*self.cell_width,
-                    self.top_margin + self.calendar_height),
+                    self.left_margin + i * self.cell_width,
+                    self.top_margin + self.calendar_height,
+                ),
                 fill=self.line_color,
-                width=1
+                width=1,
             )
 
             if d == self.today:
@@ -356,33 +394,39 @@ class EleGantt:
 
             self.draw.multiline_text(
                 (
-                    self.left_margin + i*self.cell_width + self.cell_width/2 - self.font_size/2, #日付は2文字
-                    self.date_position
+                    self.left_margin
+                    + i * self.cell_width
+                    + self.cell_width / 2
+                    - self.font_size / 2,  # 日付は2文字
+                    self.date_position,
                 ),
-                d.strftime('%d'),
+                d.strftime("%d"),
                 fill=self.font_color,
-                font=font
+                font=font,
             )
             self.draw.multiline_text(
                 (
-                    self.left_margin + i*self.cell_width + self.cell_width/2 - self.font_size, #曜日は3文字
-                    self.week_position
+                    self.left_margin
+                    + i * self.cell_width
+                    + self.cell_width / 2
+                    - self.font_size,  # 曜日は3文字
+                    self.week_position,
                 ),
                 week_str[d.weekday()],
                 fill=self.font_color,
-                font=font
+                font=font,
             )
 
         i = self.max_day
         self.draw.line(
             (
-                self.left_margin + i*self.cell_width,
+                self.left_margin + i * self.cell_width,
                 self.top_margin,
-                self.left_margin + i*self.cell_width,
-                self.top_margin + self.calendar_height
+                self.left_margin + i * self.cell_width,
+                self.top_margin + self.calendar_height,
             ),
             fill=(0, 0, 0),
-            width=1
+            width=1,
         )
 
     def show(self):
@@ -394,18 +438,16 @@ class EleGantt:
     def draw_random_line(self):
         for x in range(self.im_width):
             self.draw.line(
-                (
-                    x, 0, x, self.im_height
-                ),
+                (x, 0, x, self.im_height),
                 fill=(
                     random.randrange(0, 100),
                     random.randrange(0, 100),
-                    random.randrange(0, 30)
+                    random.randrange(0, 30),
                 ),
-                width=1
+                width=1,
             )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     print("example is on github.")
