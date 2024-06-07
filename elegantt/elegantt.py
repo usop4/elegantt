@@ -5,7 +5,12 @@ import random
 import re
 import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
+
 import elegantt.utils
+
+
+def t(datestr):
+    return pd.Timestamp(datestr)
 
 
 class EleGantt:
@@ -50,12 +55,12 @@ class EleGantt:
         self.bg_color = color
 
         if today:
-            self.today = pd.Timestamp(today)
+            self.today = t(today)
         else:
             self.today = pd.Timestamp.today().normalize()
 
         if firstday:
-            self.firstday = pd.Timestamp(firstday)
+            self.firstday = t(firstday)
         else:
             self.firstday = self.today - pd.Timedelta(days=self.today.dayofweek)
 
@@ -74,10 +79,10 @@ class EleGantt:
         self.bg_color = color
 
         if today:
-            self.today = pd.Timestamp(today)
+            self.today = t(today)
 
         if firstday:
-            self.firstday = pd.Timestamp(firstday)
+            self.firstday = t(firstday)
 
         self.calendar_height = self.im_height - self.top_margin - self.bottom_margin
 
@@ -87,40 +92,44 @@ class EleGantt:
     def get_holidays(self):
         return self.holidays
 
-    def parse_markdown(self, str):
-        events = []
-        eid = 0
+    def calc_end_date(self, start_date: pd.Timestamp, duration: int):
         custom_business_day = pd.tseries.offsets.CustomBusinessDay(
             holidays=pd.to_datetime(self.holidays)
         )
+        return start_date + custom_business_day * (duration - 1)
+
+    def parse_markdown(self, str):
+        events = []
+        eid = 0
         for line in str.splitlines():
             if "|" in line:
                 try:
                     title = line.split("|")[3].strip()
                     dates = re.findall(r"\d{4}-\d{2}-\d{2}", line)
                     duration = re.search(r"\b(\d+)(d|h)\b", line)
+                    if duration:
+                        d = int(duration.group(1))
 
                     if len(dates) == 2:
-                        start_date = pd.Timestamp(dates[0])
-                        end_date = pd.Timestamp(dates[1])
+                        start_date = t(dates[0])
+                        end_date = t(dates[1])
 
                     if len(dates) == 1:
-                        start_date = pd.Timestamp(dates[0])
-                        if duration.group(2) == "d":
-                            end_date = start_date + custom_business_day * (
-                                int(duration.group(1)) - 1
-                            )
+                        start_date = t(dates[0])
+                        end_date = self.calc_end_date(start_date, d)
 
                     if len(dates) == 0 and duration is not None:
-                        start_date = events[eid - 1]["end"] + custom_business_day * 1
-                        if duration.group(2) == "d":
-                            end_date = start_date + custom_business_day * (
-                                int(duration.group(1)) - 1
-                            )
+                        start_date = self.calc_end_date(
+                            previous_end_date, 1 + 1  # 終了日の翌日
+                        )
+                        end_date = self.calc_end_date(start_date, d)
 
                     if len(dates) == 0 and duration is None:
                         start_date = None
                         end_date = None
+                    else:
+                        previous_end_date = end_date
+
                     events.append(
                         {"title": title, "start": start_date, "end": end_date}
                     )
@@ -133,33 +142,30 @@ class EleGantt:
     def parse_mermaid(self, str):
         events = []
         eid = 0
-        custom_business_day = pd.tseries.offsets.CustomBusinessDay(
-            holidays=pd.to_datetime(self.holidays)
-        )
         for line in str.splitlines():
             if ":" in line:
                 try:
                     title = line.split(":")[0].strip()
                     dates = re.findall(r"\d{4}-\d{2}-\d{2}", line)
                     duration = re.search(r"\b(\d+)(d|h)\b", line)
+                    if duration:
+                        d = int(duration.group(1))
 
                     if len(dates) == 2:
-                        start_date = pd.Timestamp(dates[0])
-                        end_date = pd.Timestamp(dates[1])
+                        start_date = t(dates[0])
+                        end_date = t(dates[1])
 
-                    if len(dates) == 1:
-                        start_date = pd.Timestamp(dates[0])
-                        if duration.group(2) == "d":
-                            end_date = start_date + custom_business_day * (
-                                int(duration.group(1)) - 1
-                            )
+                    if len(dates) == 1 and duration is not None:
+                        start_date = t(dates[0])
+                        end_date = self.calc_end_date(start_date, d)
 
                     if len(dates) == 0 and duration is not None:
-                        start_date = events[eid - 1]["end"] + custom_business_day * 1
-                        if duration.group(2) == "d":
-                            end_date = start_date + custom_business_day * (
-                                int(duration.group(1)) - 1
-                            )
+                        start_date = self.calc_end_date(
+                            previous_end_date, 1 + 1  # 終了日の翌日
+                        )
+                        end_date = self.calc_end_date(start_date, d)
+
+                    previous_end_date = end_date
 
                     events.append(
                         {"title": title, "start": start_date, "end": end_date}
@@ -278,14 +284,14 @@ class EleGantt:
     def draw_campain(self, start, end, title):
 
         if start:
-            start_date = pd.Timestamp(start)
+            start_date = t(start)
         else:
-            start_date = pd.Timestamp("0001-01-01")
+            start_date = t("0001-01-01")
 
         if end:
-            end_date = pd.Timestamp(end)
+            end_date = t(end)
         else:
-            end_date = pd.Timestamp("0001-01-01")
+            end_date = t("0001-01-01")
 
         start_pos = (start_date - self.firstday).days
 
