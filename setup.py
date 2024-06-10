@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='elegantt',
-    version='0.0.5',
+    version='0.0.6',
     packages=find_packages(),
 
     author='Takayuki Uehara',
@@ -25,6 +25,7 @@ setup(
 
     install_requires=[
         'Pillow>=9.4,<10.4',
+        'Pandas'
     ],
 
     entry_points="""
