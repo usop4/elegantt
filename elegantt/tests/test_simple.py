@@ -1,5 +1,5 @@
 import pandas as pd
-
+import os
 import sys
 
 sys.path.insert(0, "../..")
@@ -8,17 +8,18 @@ import elegantt
 import elegantt.utils
 import elegantt.command
 
+from PIL import Image, ImageChops
+
 
 def test_simple_scenario():
-    chartsize = (720, 320)
-    bgcolor = (255, 255, 255)
-    gchart = elegantt.EleGantt(chartsize, bgcolor, today="2024-06-03")
-    gchart.set_max_day(14)
+    imgpath = os.path.dirname(__file__) + "/img/"
+    gchart = elegantt.EleGantt(today="2024-06-20", firstday="2024-06-20")
+    gchart.set_holidays(["2024-06-25"])
     gchart.draw_calendar()
-    gchart.draw_campain("2024-06-03", "2024-06-07", "Task 1 03-07")
-    gchart.draw_campain("2024-06-06", "2024-06-10", "Task 2 06-10")
-    gchart.draw_campain("2024-06-24", "2024-06-30", "Task 3")
-    gchart.save("img/test_simple_scenario.png")
+    gchart.draw_campain(None, None, "task a")
+    gchart.draw_campain("2024-06-20", "2024-06-21", "task b")
+    gchart.draw_campain("2024-06-24", "2024-06-26", "task c")
+    gchart.save(imgpath + "test.png")
 
 
 def test_parse_markdown():
@@ -47,3 +48,13 @@ def test_parse_markdown():
     gchart = elegantt.EleGantt()
     events = gchart.parse_markdown(s)
     assert events == org_events
+
+
+def test_diff_image():
+    imgpath = os.path.dirname(__file__) + "/img/"
+    testpath = os.path.dirname(__file__) + "/"
+
+    image1 = Image.open(imgpath + "test_basic_monday.png")
+    image2 = Image.open(testpath + "img/test_parse_and_draw_from_markdown.png")
+    diff = ImageChops.difference(image1, image2)
+    diff.save(imgpath + "diff.png")

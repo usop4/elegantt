@@ -88,26 +88,35 @@ class TestScenario(unittest.TestCase):
             Image.open(self.imgpath + "test_basic_firstday.png"), Image.open(image_name)
         )
 
-    def test_parse_and_draw(self):
+    def test_parse_and_draw_from_mermaid(self):
         s = """
             task a            :done, des1, 2024-06-15, 2024-06-18
             task b            :active, des2, 2024-06-20, 2d
             task c            :         des3, after des2, 3d
         """
         gchart = elegantt.EleGantt(today="2024-06-18")
-        parsed_events = gchart.parse_mermaid(s)
-        gchart.draw_calendar()
-        for event in parsed_events:
-            start = event["start"].strftime("%Y-%m-%d")
-            end = event["end"].strftime("%Y-%m-%d")
-            gchart.draw_campain(start, end, event["title"])
+        gchart.auto_draw(s, mode="mermaid")
         image_name = self.imgpath + inspect.currentframe().f_code.co_name + ".png"
         gchart.save(image_name)
         self.assertEqual(
-            Image.open(self.imgpath + "test_basic_monday.png"), Image.open(image_name)
+            Image.open(self.imgpath + "test_basic_firstday.png"), Image.open(image_name)
         )
 
-    def test_parse_and_draw_section(self):
+    def test_parse_and_draw_from_markdown(self):
+        s = """
+        |2024-06-15|2024-06-18|task a|
+        |2024-06-20|2d        |task b|
+        |3d        |          |task c|
+        """
+        gchart = elegantt.EleGantt(today="2024-06-18")
+        gchart.auto_draw(s, mode="markdown")
+        image_name = self.imgpath + inspect.currentframe().f_code.co_name + ".png"
+        gchart.save(image_name)
+        self.assertEqual(
+            Image.open(self.imgpath + "test_basic_firstday.png"), Image.open(image_name)
+        )
+
+    def test_auto_draw_section(self):
         s = """
             section task a
             task b            :active, des2, 2024-06-20, 2d
@@ -116,19 +125,14 @@ class TestScenario(unittest.TestCase):
         gchart = elegantt.EleGantt(today="2024-06-20", firstday="2024-06-20")
         gchart.set_holidays(["2024-06-25"])
         gchart.set_max_day(14)
-        parsed_events = gchart.parse_mermaid(s)
-        gchart.draw_calendar()
-        for event in parsed_events:
-            start = event["start"].strftime("%Y-%m-%d") if event["start"] else None
-            end = event["end"].strftime("%Y-%m-%d") if event["end"] else None
-            gchart.draw_campain(start, end, event["title"])
+        gchart.auto_draw(s, mode="mermaid")
         image_name = self.imgpath + inspect.currentframe().f_code.co_name + ".png"
         gchart.save(image_name)
         self.assertEqual(
             Image.open(self.imgpath + "test_section.png"), Image.open(image_name)
         )
 
-    def test_auto_resize(self):
+    def test_auto_draw(self):
         s = """
             section task a
             task b            :active, des2, 2024-06-20, 2d
@@ -136,13 +140,7 @@ class TestScenario(unittest.TestCase):
         """
         gchart = elegantt.EleGantt()
         gchart.set_holidays(["2024-06-25"])
-        parsed_events = gchart.parse_mermaid(s)
-        gchart.auto_resize(parsed_events)
-        gchart.draw_calendar()
-        for event in parsed_events:
-            start = event["start"].strftime("%Y-%m-%d") if event["start"] else None
-            end = event["end"].strftime("%Y-%m-%d") if event["end"] else None
-            gchart.draw_campain(start, end, event["title"])
+        gchart.auto_draw(s, mode="mermaid")
         image_name = self.imgpath + inspect.currentframe().f_code.co_name + ".png"
         gchart.save(image_name)
         self.assertEqual(
@@ -158,13 +156,7 @@ class TestScenario(unittest.TestCase):
         """
         gchart = elegantt.EleGantt()
         gchart.set_holidays(["2024-06-25"])
-        parsed_events = gchart.parse_mermaid(s)
-        gchart.auto_resize(parsed_events)
-        gchart.draw_calendar()
-        for event in parsed_events:
-            start = event["start"].strftime("%Y-%m-%d") if event["start"] else None
-            end = event["end"].strftime("%Y-%m-%d") if event["end"] else None
-            gchart.draw_campain(start, end, event["title"])
+        gchart.auto_draw(s, mode="mermaid")
         image_name = self.imgpath + inspect.currentframe().f_code.co_name + ".png"
         gchart.save(image_name)
         self.assertEqual(
@@ -179,4 +171,11 @@ class TestScenario(unittest.TestCase):
         self.assertEqual(
             Image.open(self.imgpath + "test_basic_firstday.png"),
             Image.open(self.testpath + "sample_mermaid.png"),
+        )
+
+    def test_command_line_markdown(self):
+        elegantt.command.main(args=[self.testpath + "sample_markdown.md"])
+        self.assertEqual(
+            Image.open(self.imgpath + "test_basic_firstday.png"),
+            Image.open(self.testpath + "sample_markdown.png"),
         )

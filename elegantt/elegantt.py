@@ -99,14 +99,22 @@ class EleGantt:
         return start_date + custom_business_day * (duration - 1)
 
     def parse_markdown(self, str):
+        previous_end_date = t(self.today)
         events = []
         eid = 0
         for line in str.splitlines():
             if "|" in line:
                 try:
+                    start_date = None
+                    end_date = None
                     title = line.split("|")[3].strip()
+                    if "---" in title:  # ヘッダ行は読み飛ばす
+                        events = []
+                        eid = 0
+                        title = None
+
                     dates = re.findall(r"\d{4}-\d{2}-\d{2}", line)
-                    duration = re.search(r"\b(\d+)(d|h)\b", line)
+                    duration = re.search(r"\b(\d+)(d)\b", line)
                     if duration:
                         d = int(duration.group(1))
 
@@ -130,16 +138,18 @@ class EleGantt:
                     else:
                         previous_end_date = end_date
 
-                    events.append(
-                        {"title": title, "start": start_date, "end": end_date}
-                    )
-                    eid = eid + 1
+                    if title:
+                        events.append(
+                            {"title": title, "start": start_date, "end": end_date}
+                        )
+                        eid = eid + 1
                 except Exception as e:
                     print(e)
                     raise
         return events
 
     def parse_mermaid(self, str):
+        previous_end_date = t(self.today)
         events = []
         eid = 0
         for line in str.splitlines():
@@ -216,6 +226,18 @@ class EleGantt:
             firstday=analyzed_events["start"].strftime("%Y-%m-%d"),
         )
 
+    def auto_draw(self, s: str, mode: str):
+        if mode == "mermaid":
+            events = self.parse_mermaid(s)
+        if mode == "markdown":
+            events = self.parse_markdown(s)
+        self.auto_resize(events)
+        self.draw_calendar()
+        for event in events:
+            start = event["start"].strftime("%Y-%m-%d") if event["start"] else None
+            end = event["end"].strftime("%Y-%m-%d") if event["end"] else None
+            self.draw_campain(start, end, event["title"])
+
     def calc_height(self):
         return (
             self.max_events * (self.box_height + self.box_margin)
@@ -286,12 +308,12 @@ class EleGantt:
         if start:
             start_date = t(start)
         else:
-            start_date = t("0001-01-01")
+            start_date = t("1900-01-01")
 
         if end:
             end_date = t(end)
         else:
-            end_date = t("0001-01-01")
+            end_date = t("1900-01-01")
 
         start_pos = (start_date - self.firstday).days
 
@@ -440,18 +462,6 @@ class EleGantt:
 
     def save(self, fname):
         self.im.save(fname)
-
-    def draw_random_line(self):
-        for x in range(self.im_width):
-            self.draw.line(
-                (x, 0, x, self.im_height),
-                fill=(
-                    random.randrange(0, 100),
-                    random.randrange(0, 100),
-                    random.randrange(0, 30),
-                ),
-                width=1,
-            )
 
 
 if __name__ == "__main__":

@@ -28,6 +28,8 @@ def test_parse_markdown():
     g = elegantt.EleGantt()
     g.set_holidays(["2024-06-12"])
     s = """
+        |start     |end       |task|
+        |----------|----------|----|
         |2024-06-03|2d        |a   |
         |1d        |          |b   |
         |3d        |          |c   |
