@@ -1,3 +1,7 @@
+![PyPI - Version](https://img.shields.io/pypi/v/elegantt)
+[![Downloads](https://static.pepy.tech/badge/elegantt)](https://pepy.tech/project/elegantt)
+
+
 # elegantt
 
 ## Overview
@@ -40,7 +44,7 @@ yum install google-noto-sans-cjk-ttc-fonts.noarch
 Generate a Gantt chart from CSV file:
 
 ```sh
-eleteng sample.csv
+eletentt sample.csv
 ```
 
 CSV Format Example
@@ -54,7 +58,7 @@ CSV Format Example
 generate a Gantt chart from a Mermaid format:
 
 ```sh
-eleteng sample_mermaid.txt
+eletentt sample_mermaid.txt
 ```
 
 Mermaid Format Example
@@ -64,6 +68,20 @@ gantt
     section task a
     task b            :active,  des2, 2024-05-20, 4d
     task c            :         des3, after des2, 7d
+```
+
+generate a Gantt chart from a Mermaid format:
+
+```sh
+eletentt sample_markdown.md
+```
+
+Markdown Format Example
+
+```
+|2024-06-15|2024-06-18|task a|
+|2024-06-20|2d        |task b|
+|3d        |          |task c|
 ```
 
 ### As a library
@@ -85,6 +103,21 @@ gchart.draw_calendar()
 gchart.draw_campain("2019-10-15","2019-10-18","Task 1")
 gchart.draw_campain("2019-10-20","2019-10-23","Task 2")
 gchart.draw_campain("2019-10-24","2019-10-30","Task 3")
+gchart.save("gantt_chart.png")
+```
+
+or auto_draw for mermaid or markdown format
+
+```py
+import elegantt
+
+s = """
+    task a  :done, des1, 2024-06-15, 2024-06-18
+    task b  :active, des2, 2024-06-20, 2d
+    task c  :         des3, after des2, 3d
+"""
+gchart = elegantt.EleGantt(today="2024-06-18")
+gchart.auto_draw(s, mode="mermaid")
 gchart.save("gantt_chart.png")
 ```
 
