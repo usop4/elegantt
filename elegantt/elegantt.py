@@ -226,7 +226,7 @@ class EleGantt:
             firstday=analyzed_events["start"].strftime("%Y-%m-%d"),
         )
 
-    def auto_draw(self, s: str, mode: str):
+    def auto_draw(self, s: str, mode: str = "mermaid"):
         if mode == "mermaid":
             events = self.parse_mermaid(s)
         if mode == "markdown":

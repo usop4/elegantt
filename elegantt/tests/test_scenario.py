@@ -102,6 +102,20 @@ class TestScenario(unittest.TestCase):
             Image.open(self.imgpath + "test_basic_firstday.png"), Image.open(image_name)
         )
 
+    def test_parse_and_draw_from_mermaid_as_default(self):
+        s = """
+            task a            :done, des1, 2024-06-15, 2024-06-18
+            task b            :active, des2, 2024-06-20, 2d
+            task c            :         des3, after des2, 3d
+        """
+        gchart = elegantt.EleGantt(today="2024-06-18")
+        gchart.auto_draw(s)
+        image_name = self.imgpath + inspect.currentframe().f_code.co_name + ".png"
+        gchart.save(image_name)
+        self.assertEqual(
+            Image.open(self.imgpath + "test_basic_firstday.png"), Image.open(image_name)
+        )
+
     def test_parse_and_draw_from_markdown(self):
         s = """
         |2024-06-15|2024-06-18|task a|
