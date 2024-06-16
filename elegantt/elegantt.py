@@ -1,7 +1,6 @@
 #!python3
 # -*- coding: utf-8 -*-
 
-import random
 import re
 import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
@@ -27,14 +26,17 @@ class EleGantt:
     box_height = 40
     font_size = 12
 
-    max_events = 5
+    min_events = 5
+    max_events = 99
+    events_size = 5
 
     min_day = 14
-    max_day = 14
+    max_day = 99
+    day_num = 14
 
     default_size = (
-        left_margin + cell_width * max_day + left_margin,
-        box_position + (box_height + box_margin) * max_events + bottom_margin,
+        left_margin + cell_width * min_day + left_margin,
+        box_position + (box_height + box_margin) * min_events + bottom_margin,
     )
 
     bg_color = (255, 255, 255)
@@ -169,6 +171,10 @@ class EleGantt:
                         start_date = t(dates[0])
                         end_date = self.calc_end_date(start_date, d)
 
+                    if len(dates) == 1 and duration is None:
+                        start_date = t(dates[0])
+                        end_date = self.calc_end_date(start_date, 0)
+
                     if len(dates) == 0 and duration is not None:
                         start_date = self.calc_end_date(
                             previous_end_date, 1 + 1  # 終了日の翌日
@@ -205,48 +211,63 @@ class EleGantt:
         analyzed_events = {"start": start, "end": end, "size": size}
         return analyzed_events
 
-    def auto_resize(self, events):
+    def auto_resize(self, events, today=False, firstday=False):
         analyzed_events = self.analyze_events(events)
-        days = (analyzed_events["end"] - analyzed_events["start"]).days + 1
 
-        if days > self.min_day:
-            self.set_max_day(days)
-        else:
-            days = self.max_day
+        self.day_num = (analyzed_events["end"] - analyzed_events["start"]).days + 1
+        if self.day_num < self.min_day:
+            self.day_num = self.min_day
+        if self.day_num > self.max_day:
+            self.day_num = self.max_day
 
-        if analyzed_events["size"] > self.max_events:
-            self.max_events = analyzed_events["size"]
+        self.events_size = analyzed_events["size"]
+        if self.events_size < self.min_events:
+            self.events_size = self.min_events
+        elif self.events_size > self.max_events:
+            self.events_size = self.max_events
+
+        if today is None:
+            today = analyzed_events["start"].strftime("%Y-%m-%d")
+
+        if firstday is None:
+            firstday = analyzed_events["start"].strftime("%Y-%m-%d")
 
         width = self.calc_width()
         height = self.calc_height()
 
         self.resize(
             size=(width, height),
-            today=analyzed_events["start"].strftime("%Y-%m-%d"),
-            firstday=analyzed_events["start"].strftime("%Y-%m-%d"),
+            today=today,
+            firstday=firstday,
         )
 
-    def auto_draw(self, s: str, mode: str = "mermaid"):
+    def auto_draw(self, s: str, mode: str = "mermaid", today=None, firstday=None):
+
         if mode == "mermaid":
             events = self.parse_mermaid(s)
         if mode == "markdown":
             events = self.parse_markdown(s)
-        self.auto_resize(events)
+
+        self.auto_resize(events, today, firstday)
         self.draw_calendar()
         for event in events:
             start = event["start"].strftime("%Y-%m-%d") if event["start"] else None
             end = event["end"].strftime("%Y-%m-%d") if event["end"] else None
             self.draw_campain(start, end, event["title"])
 
-    def calc_height(self):
+    def calc_height(self, events_size=None):
+        if events_size is None:
+            events_size = self.events_size
         return (
-            self.max_events * (self.box_height + self.box_margin)
+            events_size * (self.box_height + self.box_margin)
             + self.box_position
             + self.bottom_margin
         )
 
-    def calc_width(self):
-        return self.max_day * self.cell_width + 2 * self.left_margin
+    def calc_width(self, days=None):
+        if days is None:
+            days = self.day_num
+        return days * self.cell_width + 2 * self.left_margin
 
     def get_today(self):
         return self.today
@@ -320,34 +341,27 @@ class EleGantt:
         if start_pos < 0:
             start_pos = 0
 
-        if start_pos > self.max_day:
-            start_pos = self.max_day
-
         if end_date > self.firstday:
             end_pos = (end_date - self.firstday).days
-            if end_pos > self.max_day:
-                end_pos = self.max_day - 1
         else:
             end_pos = 0
 
-        if end_pos != 0:
-            self.draw.rectangle(
-                [
-                    (
-                        start_pos * self.cell_width + self.left_margin,
-                        self.box_position
-                        + self.num * (self.box_height + self.box_margin),
-                    ),
-                    (
-                        (end_pos + 1) * self.cell_width + self.left_margin,
-                        self.box_position
-                        + self.num * (self.box_height + self.box_margin)
-                        + self.box_height,
-                    ),
-                ],
-                fill=self.bar_color,
-                outline=None,
-            )
+        self.draw.rectangle(
+            [
+                (
+                    start_pos * self.cell_width + self.left_margin,
+                    self.box_position + self.num * (self.box_height + self.box_margin),
+                ),
+                (
+                    (end_pos + 1) * self.cell_width + self.left_margin,
+                    self.box_position
+                    + self.num * (self.box_height + self.box_margin)
+                    + self.box_height,
+                ),
+            ],
+            fill=self.bar_color,
+            outline=None,
+        )
 
         self.draw.multiline_text(
             (
@@ -362,12 +376,12 @@ class EleGantt:
         )
         self.num = self.num + 1
 
-    def draw_calendar(self):
+    def draw_calendar(self, days=None):
 
         week_str = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         # week_str = ['月','火','水','木','金','土','日']
 
-        for i in range(self.max_day):
+        for i in range(self.day_num):
 
             d = self.firstday + pd.offsets.DateOffset(n=i)
 
@@ -445,7 +459,7 @@ class EleGantt:
                 font=font,
             )
 
-        i = self.max_day
+        i = self.day_num
         self.draw.line(
             (
                 self.left_margin + i * self.cell_width,
