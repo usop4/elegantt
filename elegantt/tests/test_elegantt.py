@@ -1,12 +1,16 @@
+import pytest
+
 import sys
-import locale
-import pandas as pd
 
 sys.path.insert(0, "../..")
 
 import elegantt
 import elegantt.utils
 import elegantt.command
+
+import locale
+
+import pandas as pd
 
 
 def t(datestr):
@@ -15,13 +19,45 @@ def t(datestr):
 
 def test_calc_end_date_1():
     g = elegantt.EleGantt()
-    assert g.calc_end_date(t("2024-06-03"), 2) == t("2024-06-04")
+    assert g.calc_end_date(t("2024-06-03"), 1) == t("2024-06-03")
 
 
 def test_calc_end_date_2():
     g = elegantt.EleGantt()
     g.set_holidays(["2024-06-07"])
     assert g.calc_end_date(t("2024-06-03"), 5) == t("2024-06-10")
+
+
+def test_calc_height():
+    g = elegantt.EleGantt()
+    assert g.calc_height() == (
+        g.box_position + (g.box_height + g.box_margin) * g.events_size + g.bottom_margin
+    )
+
+
+def test_calc_height_10():
+    g = elegantt.EleGantt()
+    assert g.calc_height(10) == (
+        g.box_position + (g.box_height + g.box_margin) * 10 + g.bottom_margin
+    )
+
+
+def test_calc_width():
+    g = elegantt.EleGantt()
+    assert g.calc_width() == (g.left_margin + g.cell_width * g.day_num + g.left_margin)
+
+
+def test_calc_width_10():
+    g = elegantt.EleGantt()
+    assert g.calc_width(10) == (g.left_margin + g.cell_width * 10 + g.left_margin)
+
+
+def test_draw_calendar_font_exception():
+    with pytest.raises(OSError) as e:
+        g = elegantt.EleGantt()
+        g.set_font("dummy")
+        g.draw_calendar()
+    assert str(e.value) == "font not found"
 
 
 def test_parse_markdown():
