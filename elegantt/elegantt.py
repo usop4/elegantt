@@ -429,10 +429,13 @@ class EleGantt:
                 width=1,
             )
 
-            if d == self.today:
-                font = ImageFont.truetype(self.font_bold, self.font_size)
-            else:
-                font = ImageFont.truetype(self.font_regular, self.font_size)
+            try:
+                if d == self.today:
+                    font = ImageFont.truetype(self.font_bold, self.font_size)
+                else:
+                    font = ImageFont.truetype(self.font_regular, self.font_size)
+            except OSError:
+                raise OSError("font not found")
 
             self.draw.multiline_text(
                 (

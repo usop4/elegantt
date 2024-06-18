@@ -1,3 +1,5 @@
+import pytest
+
 import sys
 
 sys.path.insert(0, "../..")
@@ -48,6 +50,14 @@ def test_calc_width():
 def test_calc_width_10():
     g = elegantt.EleGantt()
     assert g.calc_width(10) == (g.left_margin + g.cell_width * 10 + g.left_margin)
+
+
+def test_draw_calendar_font_exception():
+    with pytest.raises(OSError) as e:
+        g = elegantt.EleGantt()
+        g.set_font("dummy")
+        g.draw_calendar()
+    assert str(e.value) == "font not found"
 
 
 def test_parse_markdown():

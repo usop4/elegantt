@@ -1,19 +1,22 @@
 import os
 
+
 def detectfont():
     import glob
+
     fontdirs = [
-        '/usr/share/fonts/opentype/noto',
-        '/usr/share/fonts',
-        '/Library/Fonts',
-        '/System/Library/Fonts',
-        'c:/windows/fonts',
-        '/usr/local/share/font-*',
+        "/usr/share/fonts/opentype/noto",
+        "/usr/share/fonts",
+        "/Library/Fonts",
+        "/System/Library/Fonts",
+        "c:/windows/fonts",
+        "/usr/local/share/font-*",
     ]
     fontfiles = [
-        'NotoSansCJK-Regular.ttc',
-        'ipaexg.ttf',
-        'DejaVuSans.ttf',
+        "NotoSansCJK-Regular.ttc",
+        "ipaexg.ttf",
+        "DejaVuSans.ttf",
+        "meiryo.ttc",
     ]
 
     fontpath = None
@@ -26,5 +29,6 @@ def detectfont():
                     break
     return fontpath
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     print("utils.py is part of elegantt.")

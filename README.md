@@ -121,6 +121,22 @@ gchart.auto_draw(s, mode="mermaid")
 gchart.save("gantt_chart.png")
 ```
 
+If you want to specify fonts, write `set_font()` before `draw_calendar()` or `auto_draw()`.
+
+```py
+import elegantt
+
+s = """
+    task a  :done, des1, 2024-06-15, 2024-06-18
+    task b  :active, des2, 2024-06-20, 2d
+    task c  :         des3, after des2, 3d
+"""
+gchart = elegantt.EleGantt(today="2024-06-18")
+gchart.set_font("C:\Windows\Fonts\meiryo.ttc")
+gchart.auto_draw(s, mode="mermaid")
+gchart.save("gantt_chart.png")
+```
+
 ## Lisence
 
 This project is licensed under the MIT License, see the LICENSE.txt file for details
