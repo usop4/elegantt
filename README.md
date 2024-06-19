@@ -8,6 +8,8 @@
 
 elegantt is gantt chart drawing library designed for developers and project managers who need to visualize project timeline efficiently. With support for both CSV and Mermaid formats. elegantt provides the flexibility and functionality you need to keep your projects on task.
 
+![elegantt_colab](https://github.com/usop4/github_actions_test/assets/44801/91b86c6b-30a4-42df-aedf-567957f8dabc)
+
 ## Features
 
 - Simpe and intuitive API
