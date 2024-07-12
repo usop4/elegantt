@@ -178,17 +178,17 @@ class TestScenario(unittest.TestCase):
         )
 
     def test_command_line(self):
-        elegantt.command.main(args=[self.testpath + "sample.csv"])
+        elegantt.command.main(fname=self.testpath + "sample.csv")
 
     def test_command_line_mermaid(self):
-        elegantt.command.main(args=[self.testpath + "sample_mermaid.txt"])
+        elegantt.command.main(fname=self.testpath + "sample_mermaid.txt")
         self.assertEqual(
             Image.open(self.imgpath + "test_basic_firstday.png"),
             Image.open(self.testpath + "sample_mermaid.png"),
         )
 
     def test_command_line_markdown(self):
-        elegantt.command.main(args=[self.testpath + "sample_markdown.md"])
+        elegantt.command.main(fname=self.testpath + "sample_markdown.md")
         self.assertEqual(
             Image.open(self.imgpath + "test_basic_firstday.png"),
             Image.open(self.testpath + "sample_markdown.png"),
