@@ -46,7 +46,7 @@ yum install google-noto-sans-cjk-ttc-fonts.noarch
 Generate a Gantt chart from CSV file:
 
 ```sh
-elegantt sample.csv
+elegantt --fname sample.csv --out sample.png
 ```
 
 CSV Format Example
@@ -60,7 +60,7 @@ CSV Format Example
 generate a Gantt chart from a Mermaid format:
 
 ```sh
-elegantt sample_mermaid.txt
+elegantt --fname sample_mermaid.txt --out sample.png
 ```
 
 Mermaid Format Example
@@ -75,7 +75,7 @@ gantt
 generate a Gantt chart from a Mermaid format:
 
 ```sh
-elegantt sample_markdown.md
+elegantt --fname sample_markdown.md --out sample.png
 ```
 
 Markdown Format Example
