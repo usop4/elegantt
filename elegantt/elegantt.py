@@ -47,14 +47,17 @@ class EleGantt:
 
     holidays = []
 
-    def __init__(self, size=default_size, color=bg_color, today=False, firstday=False):
-        self.im = Image.new("RGB", size, color)
-        self.draw = ImageDraw.Draw(self.im)
+    def __init__(
+        self,
+        size=default_size,
+        color=bg_color,
+        today=False,
+        firstday=False,
+        fix_days=False,
+    ):
 
-        self.im_width = size[0]
-        self.im_height = size[1]
-
-        self.bg_color = color
+        self.font_regular = elegantt.utils.detectfont()
+        self.font_bold = elegantt.utils.detectfont()
 
         if today:
             self.today = t(today)
@@ -66,12 +69,18 @@ class EleGantt:
         else:
             self.firstday = self.today - pd.Timedelta(days=self.today.dayofweek)
 
-        self.calendar_height = self.im_height - self.top_margin - self.bottom_margin
+        self.resize(
+            size=size, color=color, today=today, firstday=firstday, fix_days=fix_days
+        )
 
-        self.font_regular = elegantt.utils.detectfont()
-        self.font_bold = elegantt.utils.detectfont()
-
-    def resize(self, size=default_size, color=bg_color, today=False, firstday=False):
+    def resize(
+        self,
+        size=default_size,
+        color=bg_color,
+        today=False,
+        firstday=False,
+        fix_days=False,
+    ):
         self.im = Image.new("RGB", size, color)
         self.draw = ImageDraw.Draw(self.im)
 
@@ -85,6 +94,9 @@ class EleGantt:
 
         if firstday:
             self.firstday = t(firstday)
+
+        if fix_days:
+            self.day_num = fix_days
 
         self.calendar_height = self.im_height - self.top_margin - self.bottom_margin
 

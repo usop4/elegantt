@@ -1,45 +1,59 @@
-import sys
 import csv
+import fire
+import sys
 
 import elegantt
 
 
-def main(args=sys.argv[1:]):
+def main(fname=False, out=False):
 
-    fname = args[0]
+    if fname is False:
+        print("usage: elegantt --fname path/to/file")
+        sys.exit()
+
     data = []
     start_date = "9999-99-99"
     end_date = "0000-00-00"
 
-    if "csv" in fname:
-        with open(fname) as csvfile:
-            for row in csv.reader(csvfile, delimiter=","):
-                data.append(row)
-                if row[0] < start_date:
-                    start_date = row[0]
-                if end_date < row[1]:
-                    end_date = row[1]
-
-        gchart = elegantt.EleGantt((720, 320), (255, 255, 255), today=start_date)
-        gchart.draw_calendar()
-        for row in data:
-            gchart.draw_campain(row[0], row[1], row[2])
-        gchart.save(fname.replace("csv", "png"))
-
-    if "txt" in fname:
-        gchart = elegantt.EleGantt()
+    try:
         with open(fname) as file:
-            content = file.read()
-            gchart.auto_draw(content, mode="mermaid")
-        gchart.save(fname.replace("txt", "png"))
 
-    if "md" in fname:
-        gchart = elegantt.EleGantt()
-        with open(fname) as file:
-            content = file.read()
-            gchart.auto_draw(content, mode="markdown")
-        gchart.save(fname.replace("md", "png"))
+            if "csv" in fname:
+                if out is False:
+                    out = fname.replace("csv", "png")
+                for row in csv.reader(file, delimiter=","):
+                    data.append(row)
+                    if row[0] < start_date:
+                        start_date = row[0]
+                    if end_date < row[1]:
+                        end_date = row[1]
+                gchart = elegantt.EleGantt(today=start_date)
+                gchart.draw_calendar()
+                for row in data:
+                    gchart.draw_campain(row[0], row[1], row[2])
+            if "txt" in fname:
+                if out is False:
+                    out = fname.replace("txt", "png")
+                gchart = elegantt.EleGantt()
+                content = file.read()
+                gchart.auto_draw(content, mode="mermaid")
+            if "md" in fname:
+                if out is False:
+                    out = fname.replace("md", "png")
+                gchart = elegantt.EleGantt()
+                content = file.read()
+                gchart.auto_draw(content, mode="markdown")
+            gchart.save(out)
+    except FileNotFoundError as e:
+        print(e)
+        # raise
+    except Exception as e:
+        print(e)
+
+
+def main2():
+    fire.Fire(main)
 
 
 if __name__ == "__main__":
-    main()
+    fire.Fire(main)
