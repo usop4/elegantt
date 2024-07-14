@@ -139,6 +139,54 @@ gchart.auto_draw(s, mode="mermaid")
 gchart.save("gantt_chart.png")
 ```
 
+If you want to draw gantt chart on Google colab, import IPython and write like this.
+
+```py
+import elegantt
+from IPython.display import display
+
+g = elegantt.EleGantt()
+s = """
+Task A: 2024-07-08,3d
+Taks B: 3d
+"""
+g.auto_draw(s)
+display(g.im)
+```
+
+You can set holidays like this.
+
+```py
+gchart = elegantt.EleGantt(today="2024-06-18")
+gchart.set_holidays(["2024-06-19",2024-06-25])
+```
+
+You can also set holidays with holidays lib.
+
+```py
+import holidays
+import pandas as pd
+
+jp_holiday = holidays.country_holidays('JP')
+my_holidays = []
+days = 10
+
+date_list = pd.date_range(
+    start=pd.Timestamp("today").normalize(),
+    end=pd.Timestamp("today")+pd.Timedelta(days=days)
+).tolist()
+
+for date in date_list:
+  if date in jp_holiday:
+    print(date, jp_holiday.get(date))
+    my_holidays.append(date.strftime('%Y-%m-%d'))
+  else:
+    print(date)
+
+gchart.set_holidays(my_holidays)
+```
+
+
 ## Lisence
 
 This project is licensed under the MIT License, see the LICENSE.txt file for details
