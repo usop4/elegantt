@@ -349,6 +349,7 @@ class EleGantt:
                 self.line_color = tuple(v)
             if k == "holiday_color":
                 self.holiday_color = tuple(v)
+        self.resize(color=self.bg_color)
 
     def draw_campain(self, start, end, title):
 
