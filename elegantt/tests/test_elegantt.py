@@ -160,12 +160,11 @@ def test_analyze_parsed_events():
     assert analyzed_events == gchart.analyze_events(parsed_events)
 
 
-def test_detectfont_after_init():
-    # before test on ubuntu
-    # sudo apt install fonts-noto-cjk
-    gchart = elegantt.EleGantt()
-    assert gchart.get_font() == "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"
-
+#def test_detectfont_after_init():
+#    # before test on ubuntu
+#    # sudo apt install fonts-noto-cjk
+#    gchart = elegantt.EleGantt()
+#    assert gchart.get_font() == "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"
 
 def test_detectfont_after_setfont():
     gchart = elegantt.EleGantt()

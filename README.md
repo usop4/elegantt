@@ -39,6 +39,11 @@ on RedHat/RockyLinux
 yum install google-noto-sans-cjk-ttc-fonts.noarch
 ```
 
+on Mac
+```sh
+yum install google-noto-sans-cjk-ttc-fonts.noarch
+```
+
 ## Usage
 
 ### Command Line interface
