@@ -1,6 +1,7 @@
 #!python3
 # -*- coding: utf-8 -*-
 
+import json
 import re
 import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
@@ -335,6 +336,20 @@ class EleGantt:
 
     def set_date_position(self, position):
         self.date_position = position
+
+    def parse_color_schema(self, schema):
+        for k, v in json.loads(schema).items():
+            if k == "bg_color":
+                self.bg_color = tuple(v)
+            if k == "bar_color":
+                self.bar_color = tuple(v)
+            if k == "font_color":
+                self.font_color = tuple(v)
+            if k == "line_color":
+                self.line_color = tuple(v)
+            if k == "holiday_color":
+                self.holiday_color = tuple(v)
+        self.resize(color=self.bg_color)
 
     def draw_campain(self, start, end, title):
 

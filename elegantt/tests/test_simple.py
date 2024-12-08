@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 
@@ -18,8 +19,17 @@ def t(datestr):
     return pd.Timestamp(datestr)
 
 
+def test_parse_color_schema1():
+    str = '{"bg_color":[1,2,3]}'
+    g = elegantt.EleGantt()
+    g.parse_color_schema(str)
+    assert g.bg_color == (1, 2, 3)
+
+
 def test_simple_draw():
     g = elegantt.EleGantt(firstday="2024-06-17")
+    str = '{"bg_color":[255,0,0],"bar_color":[0,255,0]}'
+    g.parse_color_schema(str)
     g.draw_calendar()
     g.draw_campain("2024-06-17", "2024-06-17", "task a")
     g.draw_campain("2024-06-18", "2024-06-18", "task b")
