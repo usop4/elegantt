@@ -27,12 +27,12 @@ def test_parse_color_schema1():
 
 
 def test_simple_draw():
-    g = elegantt.EleGantt(firstday="2024-06-17")
-    str = '{"bg_color":[255,0,0],"bar_color":[0,255,0]}'
+    g = elegantt.EleGantt(firstday="2024-06-18")
+    str = '{"bg_color":[255,255,255],"bar_color":[0,103,192]}'
     g.parse_color_schema(str)
     g.draw_calendar()
-    g.draw_campain("2024-06-17", "2024-06-17", "task a")
-    g.draw_campain("2024-06-18", "2024-06-18", "task b")
+    g.draw_campain("2024-06-15", "2024-06-17", "task a")
+    g.draw_campain("2024-06-15", "2024-06-20", "task b")
     imgpath = os.path.dirname(__file__) + "/img/"
     g.save(imgpath + "test_simple_draw.png")
 

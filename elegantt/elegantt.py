@@ -373,22 +373,23 @@ class EleGantt:
         else:
             end_pos = 0
 
-        self.draw.rectangle(
-            [
-                (
-                    start_pos * self.cell_width + self.left_margin,
-                    self.box_position + self.num * (self.box_height + self.box_margin),
-                ),
-                (
-                    (end_pos + 1) * self.cell_width + self.left_margin,
-                    self.box_position
-                    + self.num * (self.box_height + self.box_margin)
-                    + self.box_height,
-                ),
-            ],
-            fill=self.bar_color,
-            outline=None,
-        )
+        if end_date > self.firstday:
+            self.draw.rectangle(
+                [
+                    (
+                        start_pos * self.cell_width + self.left_margin,
+                        self.box_position + self.num * (self.box_height + self.box_margin),
+                    ),
+                    (
+                        (end_pos + 1) * self.cell_width + self.left_margin,
+                        self.box_position
+                        + self.num * (self.box_height + self.box_margin)
+                        + self.box_height,
+                    ),
+                ],
+                fill=self.bar_color,
+                outline=None,
+            )
 
         self.draw.multiline_text(
             (
