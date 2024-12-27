@@ -17,7 +17,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Operating System :: OS Independent",
     ],
-    install_requires=["Pillow>=10.4.0,<10.5", "Pandas", "Fire"],
+    install_requires=["Pillow>=10.4.0,<11.1", "Pandas", "Fire"],
     entry_points="""
        [console_scripts]
        elegantt = elegantt.command:main2
