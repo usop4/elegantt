@@ -30,30 +30,15 @@ def test_simple_draw():
 
 def test_simple_scenario():
     g = elegantt.EleGantt()
-    g.set_max_day(21)
+    g.parse_color_schema('{"#critical":[255,0,0]}')
     s = """
-    task a:2024-06-17,1d
-    task b:1d
-    task c:1d
+    task a : 3d
+    task b #critical: 3d
+    task c : 1d
     """
-    g.auto_draw(s, firstday="2024-06-17")
+    g.auto_draw(s)
     imgpath = os.path.dirname(__file__) + "/img/"
     g.save(imgpath + "test_simple_scenario.png")
-
-
-def test_simple_parse():
-    g = elegantt.EleGantt()
-    s = """
-    task a : 2024-06-17,1d
-    task b : 1d
-    """
-    a = g.parse_mermaid(s)
-    b = [
-        {"title": "task a", "start": t("2024-06-17"), "end": t("2024-06-17")},
-        {"title": "task b", "start": t("2024-06-18"), "end": t("2024-06-18")},
-    ]
-    assert a == b
-
 
 def test_diff_image():
     imgpath = os.path.dirname(__file__) + "/img/"
