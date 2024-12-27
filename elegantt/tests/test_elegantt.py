@@ -195,6 +195,16 @@ def test_get_holidays():
     gchart.set_holidays(holidays)
     assert gchart.get_holidays() == holidays
 
+def test_parse_color_schema1():
+    str = '{"bg_color":[1,2,3]}'
+    g = elegantt.EleGantt()
+    g.parse_color_schema(str)
+    assert g.bg_color == (1, 2, 3)
+
+def test_tag_color():
+    gchart = elegantt.EleGantt()
+    gchart.set_tag_color("red",(255,0,0))
+    assert gchart.get_tag_color("red") == (255,0,0)
 
 def test_locale():
     # before test on ubuntu

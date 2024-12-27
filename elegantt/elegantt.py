@@ -46,6 +46,8 @@ class EleGantt:
     line_color = (0, 0, 0)
     holiday_color = (210, 210, 210)
 
+    tag_color = {}
+
     holidays = []
 
     def __init__(
@@ -337,6 +339,12 @@ class EleGantt:
     def set_date_position(self, position):
         self.date_position = position
 
+    def set_tag_color(self, tag, color=(128,128,128)):
+        self.tag_color[tag] = color
+
+    def get_tag_color(self, tag):
+        return self.tag_color[tag]
+
     def parse_color_schema(self, schema):
         for k, v in json.loads(schema).items():
             if k == "bg_color":
@@ -349,6 +357,10 @@ class EleGantt:
                 self.line_color = tuple(v)
             if k == "holiday_color":
                 self.holiday_color = tuple(v)
+
+            if "#" in k:
+                self.tag_color[k] = tuple(v)
+
         self.resize(color=self.bg_color)
 
     def draw_campain(self, start, end, title):
@@ -373,6 +385,12 @@ class EleGantt:
         else:
             end_pos = 0
 
+        bar_color = self.bar_color
+        for tag, color in self.tag_color.items():
+            if tag in title:
+                bar_color = color
+                #bar_color = self.tag_color[tag]
+
         if end_date > self.firstday:
             self.draw.rectangle(
                 [
@@ -387,7 +405,7 @@ class EleGantt:
                         + self.box_height,
                     ),
                 ],
-                fill=self.bar_color,
+                fill=bar_color,
                 outline=None,
             )
 

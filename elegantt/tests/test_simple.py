@@ -14,28 +14,19 @@ import re
 
 import pandas as pd
 
-
 def t(datestr):
     return pd.Timestamp(datestr)
 
-
-def test_parse_color_schema1():
-    str = '{"bg_color":[1,2,3]}'
-    g = elegantt.EleGantt()
-    g.parse_color_schema(str)
-    assert g.bg_color == (1, 2, 3)
-
-
 def test_simple_draw():
     g = elegantt.EleGantt(firstday="2024-06-18")
-    str = '{"bg_color":[255,255,255],"bar_color":[0,103,192]}'
+    str = '{"bg_color":[255,255,255],"bar_color":[0,103,192],"#red":[255,0,0]}'
     g.parse_color_schema(str)
     g.draw_calendar()
     g.draw_campain("2024-06-15", "2024-06-17", "task a")
     g.draw_campain("2024-06-15", "2024-06-20", "task b")
+    g.draw_campain("2024-06-15", "2024-06-22", "task c #red")
     imgpath = os.path.dirname(__file__) + "/img/"
     g.save(imgpath + "test_simple_draw.png")
-
 
 def test_simple_scenario():
     g = elegantt.EleGantt()
