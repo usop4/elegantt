@@ -188,6 +188,17 @@ def test_set_holidays():
     gchart.set_holidays(holidays)
     assert gchart.holidays == holidays
 
+def test_set_holidays_invalid1():
+    holidays = "invalid_date"
+    gchart = elegantt.EleGantt()
+    with pytest.raises(ValueError):
+        gchart.set_holidays(holidays)
+
+def test_set_holidays_invalid2():
+    holidays = "2024-06-02"
+    gchart = elegantt.EleGantt()
+    with pytest.raises(ValueError):
+        gchart.set_holidays(holidays)
 
 def test_get_holidays():
     holidays = ["2024-06-02"]
@@ -195,16 +206,24 @@ def test_get_holidays():
     gchart.set_holidays(holidays)
     assert gchart.get_holidays() == holidays
 
-def test_parse_color_schema1():
+def test_parse_color_schema():
     str = '{"bg_color":[1,2,3]}'
     g = elegantt.EleGantt()
     g.parse_color_schema(str)
     assert g.bg_color == (1, 2, 3)
 
+def test_parse_color_schema_invalid():
+    str = '{"bg_color":"invalid_color"}'
+    g = elegantt.EleGantt()
+    with pytest.raises(ValueError):
+        g.parse_color_schema(str)
+
 def test_tag_color():
     gchart = elegantt.EleGantt()
     gchart.set_tag_color("red",(255,0,0))
+    gchart.set_tag_color("blue",(0,0,255))
     assert gchart.get_tag_color("red") == (255,0,0)
+
 
 def test_locale():
     # before test on ubuntu

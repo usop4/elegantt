@@ -104,6 +104,13 @@ class EleGantt:
         self.calendar_height = self.im_height - self.top_margin - self.bottom_margin
 
     def set_holidays(self, holidays):
+        if not isinstance(holidays, list):
+            raise ValueError("Holidays must be a list of date strings")
+        for date in holidays:
+            try:
+                pd.Timestamp(date)
+            except ValueError as e:
+                raise ValueError(f"Invalid date string: {date}") from e
         self.holidays = holidays
 
     def get_holidays(self):
@@ -347,6 +354,9 @@ class EleGantt:
 
     def parse_color_schema(self, schema):
         for k, v in json.loads(schema).items():
+            if not (isinstance(v, list) and len(v) == 3 and all(isinstance(i, int) and 0 <= i <= 255 for i in v)):
+                raise ValueError(f"Invalid color value for {k}: {v}")
+
             if k == "bg_color":
                 self.bg_color = tuple(v)
             if k == "bar_color":
