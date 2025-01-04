@@ -10,8 +10,10 @@ import elegantt.utils
 
 
 def t(datestr):
-    return pd.Timestamp(datestr)
-
+    try:
+        return pd.Timestamp(datestr)
+    except ValueError as e:
+        raise ValueError(f"Invalid date string: {datestr}") from e
 
 class EleGantt:
 
@@ -110,17 +112,20 @@ class EleGantt:
             try:
                 pd.Timestamp(date)
             except ValueError as e:
-                raise ValueError(f"Invalid date string: {date}") from e
+                raise ValueError(f"Invalid date string in holidays list: {date}") from e
         self.holidays = holidays
 
     def get_holidays(self):
         return self.holidays
 
     def calc_end_date(self, start_date: pd.Timestamp, duration: int):
-        custom_business_day = pd.tseries.offsets.CustomBusinessDay(
-            holidays=pd.to_datetime(self.holidays)
-        )
-        return start_date + custom_business_day * (duration - 1)
+        try:
+            custom_business_day = pd.tseries.offsets.CustomBusinessDay(
+                holidays=pd.to_datetime(self.holidays)
+            )
+            return start_date + custom_business_day * (duration - 1)
+        except Exception as e:
+            raise ValueError(f"Error calculating end date: start_date={start_date}, duration={duration}") from e
 
     def parse_markdown(self, str):
         previous_end_date = t(self.today)
@@ -353,37 +358,40 @@ class EleGantt:
         return self.tag_color[tag]
 
     def parse_color_schema(self, schema):
-        for k, v in json.loads(schema).items():
+        try:
+            color_schema = json.loads(schema)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON format: {schema}") from e
+
+        for k, v in color_schema.items():
             if not (isinstance(v, list) and len(v) == 3 and all(isinstance(i, int) and 0 <= i <= 255 for i in v)):
                 raise ValueError(f"Invalid color value for {k}: {v}")
 
             if k == "bg_color":
                 self.bg_color = tuple(v)
-            if k == "bar_color":
+            elif k == "bar_color":
                 self.bar_color = tuple(v)
-            if k == "font_color":
+            elif k == "font_color":
                 self.font_color = tuple(v)
-            if k == "line_color":
+            elif k == "line_color":
                 self.line_color = tuple(v)
-            if k == "holiday_color":
+            elif k == "holiday_color":
                 self.holiday_color = tuple(v)
-
-            if "#" in k:
+            elif "#" in k:
                 self.tag_color[k] = tuple(v)
 
         self.resize(color=self.bg_color)
 
     def draw_campain(self, start, end, title):
 
-        if start:
-            start_date = t(start)
-        else:
-            start_date = t("1900-01-01")
+        try:
+            start_date = t(start) if start else t("1900-01-01")
+            end_date = t(end) if end else None
+        except ValueError as e:
+            raise ValueError(f"Invalid date format for start or end: start={start}, end={end}") from e
 
-        if end:
-            end_date = t(end)
-        else:
-            end_date = t("1900-01-01")
+        if end_date and start_date > end_date:
+            raise ValueError(f"Start date {start_date} cannot be after end date {end_date}")
 
         start_pos = (start_date - self.firstday).days
 

@@ -218,6 +218,28 @@ def test_parse_color_schema_invalid():
     with pytest.raises(ValueError):
         g.parse_color_schema(str)
 
+def test_parse_color_schema_invalid_json():
+    g = elegantt.EleGantt()
+    schema = '{"bg_color":[255,255,255,"bar_color":[0,103,192],"font_color":[0,0,0]}'
+    with pytest.raises(ValueError, match="Invalid JSON format"):
+        g.parse_color_schema(schema)
+
+def test_parse_color_schema_invalid_color():
+    g = elegantt.EleGantt()
+    schema = '{"bg_color":[255,255],"bar_color":[0,103,192],"font_color":[0,0,0]}'
+    with pytest.raises(ValueError, match="Invalid color value for bg_color"):
+        g.parse_color_schema(schema)
+
+def test_draw_campain_invalid_date():
+    g = elegantt.EleGantt()
+    with pytest.raises(ValueError, match="Invalid date format for start or end"):
+        g.draw_campain("invalid-date", "2024-06-17", "task a")
+
+def test_draw_campain_start_after_end():
+    g = elegantt.EleGantt()
+    with pytest.raises(ValueError, match="Start date .* cannot be after end date .*"):
+        g.draw_campain("2024-06-18", "2024-06-17", "task a")
+
 def test_tag_color():
     gchart = elegantt.EleGantt()
     gchart.set_tag_color("red",(255,0,0))
