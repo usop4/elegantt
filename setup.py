@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="elegantt",
-    version="0.0.9",
+    version="0.0.11",
     packages=find_packages(),
     author="Takayuki Uehara",
     author_email="t.uehara@gmail.com",
