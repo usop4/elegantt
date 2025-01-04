@@ -10,8 +10,10 @@ import elegantt.utils
 
 
 def t(datestr):
-    return pd.Timestamp(datestr)
-
+    try:
+        return pd.Timestamp(datestr)
+    except ValueError as e:
+        raise ValueError(f"Invalid date string: {datestr}") from e
 
 class EleGantt:
 
@@ -45,6 +47,8 @@ class EleGantt:
     font_color = (0, 0, 0)
     line_color = (0, 0, 0)
     holiday_color = (210, 210, 210)
+
+    tag_color = {}
 
     holidays = []
 
@@ -102,16 +106,26 @@ class EleGantt:
         self.calendar_height = self.im_height - self.top_margin - self.bottom_margin
 
     def set_holidays(self, holidays):
+        if not isinstance(holidays, list):
+            raise ValueError("Holidays must be a list of date strings")
+        for date in holidays:
+            try:
+                pd.Timestamp(date)
+            except ValueError as e:
+                raise ValueError(f"Invalid date string in holidays list: {date}") from e
         self.holidays = holidays
 
     def get_holidays(self):
         return self.holidays
 
     def calc_end_date(self, start_date: pd.Timestamp, duration: int):
-        custom_business_day = pd.tseries.offsets.CustomBusinessDay(
-            holidays=pd.to_datetime(self.holidays)
-        )
-        return start_date + custom_business_day * (duration - 1)
+        try:
+            custom_business_day = pd.tseries.offsets.CustomBusinessDay(
+                holidays=pd.to_datetime(self.holidays)
+            )
+            return start_date + custom_business_day * (duration - 1)
+        except Exception as e:
+            raise ValueError(f"Error calculating end date: start_date={start_date}, duration={duration}") from e
 
     def parse_markdown(self, str):
         previous_end_date = t(self.today)
@@ -337,31 +351,47 @@ class EleGantt:
     def set_date_position(self, position):
         self.date_position = position
 
+    def set_tag_color(self, tag, color=(128,128,128)):
+        self.tag_color[tag] = color
+
+    def get_tag_color(self, tag):
+        return self.tag_color[tag]
+
     def parse_color_schema(self, schema):
-        for k, v in json.loads(schema).items():
+        try:
+            color_schema = json.loads(schema)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON format: {schema}") from e
+
+        for k, v in color_schema.items():
+            if not (isinstance(v, list) and len(v) == 3 and all(isinstance(i, int) and 0 <= i <= 255 for i in v)):
+                raise ValueError(f"Invalid color value for {k}: {v}")
+
             if k == "bg_color":
                 self.bg_color = tuple(v)
-            if k == "bar_color":
+            elif k == "bar_color":
                 self.bar_color = tuple(v)
-            if k == "font_color":
+            elif k == "font_color":
                 self.font_color = tuple(v)
-            if k == "line_color":
+            elif k == "line_color":
                 self.line_color = tuple(v)
-            if k == "holiday_color":
+            elif k == "holiday_color":
                 self.holiday_color = tuple(v)
+            elif "#" in k:
+                self.tag_color[k] = tuple(v)
+
         self.resize(color=self.bg_color)
 
     def draw_campain(self, start, end, title):
 
-        if start:
-            start_date = t(start)
-        else:
-            start_date = t("1900-01-01")
+        try:
+            start_date = t(start) if start else t("1900-01-01")
+            end_date = t(end) if end else None
+        except ValueError as e:
+            raise ValueError(f"Invalid date format for start or end: start={start}, end={end}") from e
 
-        if end:
-            end_date = t(end)
-        else:
-            end_date = t("1900-01-01")
+        if end_date and start_date > end_date:
+            raise ValueError(f"Start date {start_date} cannot be after end date {end_date}")
 
         start_pos = (start_date - self.firstday).days
 
@@ -372,6 +402,12 @@ class EleGantt:
             end_pos = (end_date - self.firstday).days
         else:
             end_pos = 0
+
+        bar_color = self.bar_color
+        for tag, color in self.tag_color.items():
+            if tag in title:
+                bar_color = color
+                #bar_color = self.tag_color[tag]
 
         if end_date > self.firstday:
             self.draw.rectangle(
@@ -387,7 +423,7 @@ class EleGantt:
                         + self.box_height,
                     ),
                 ],
-                fill=self.bar_color,
+                fill=bar_color,
                 outline=None,
             )
 

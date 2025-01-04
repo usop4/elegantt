@@ -198,6 +198,21 @@ gchart = elegantt.EleGantt(today="2024-06-18")
 gchart.parse_color_schema('{"bg_color":[255,255,255],"bar_color":[0,103,192]}')
 ```
 
+more...
+
+```py
+g = elegantt.EleGantt()
+g.parse_color_schema('{"#red":[255,0,0]}')
+s = """
+task a : 3d
+task b #red: 3d
+task c : 1d
+"""
+g.auto_draw(s)
+g.save("test.png")
+```
+
+
 ## Lisence
 
 This project is licensed under the MIT License, see the LICENSE.txt file for details
