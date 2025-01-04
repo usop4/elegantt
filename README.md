@@ -39,6 +39,11 @@ on RedHat/RockyLinux
 yum install google-noto-sans-cjk-ttc-fonts.noarch
 ```
 
+on Mac
+```sh
+yum install google-noto-sans-cjk-ttc-fonts.noarch
+```
+
 ## Usage
 
 ### Command Line interface
@@ -186,6 +191,12 @@ for date in date_list:
 gchart.set_holidays(my_holidays)
 ```
 
+You can change color like this.
+
+```py
+gchart = elegantt.EleGantt(today="2024-06-18")
+gchart.parse_color_schema('{"bg_color":[255,255,255],"bar_color":[0,103,192]}')
+```
 
 ## Lisence
 

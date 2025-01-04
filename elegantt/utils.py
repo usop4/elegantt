@@ -11,9 +11,11 @@ def detectfont():
         "/System/Library/Fonts",
         "c:/windows/fonts",
         "/usr/local/share/font-*",
+        os.path.expanduser("~/Library/Fonts")
     ]
     fontfiles = [
         "NotoSansCJK-Regular.ttc",
+        "NotoSansCJK.ttc",
         "ipaexg.ttf",
         "DejaVuSans.ttf",
         "meiryo.ttc",
@@ -28,7 +30,6 @@ def detectfont():
                     fontpath = os.path.join(root, font)
                     break
     return fontpath
-
 
 if __name__ == "__main__":
     print("utils.py is part of elegantt.")
