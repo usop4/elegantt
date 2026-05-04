@@ -1,0 +1,35 @@
+[build-system]
+requires = [
+    "setuptools>=61.0",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "elegantt"
+version = "0.0.11"
+description = "This is a gantt chart drawing library"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.12,<4"
+license = { text = "MIT" }
+authors = [
+    { name = "Takayuki Uehara", email = "t.uehara@gmail.com" }
+]
+urls = { Homepage = "http://github.com/usop4/elegantt" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "Pillow",
+    "Pandas",
+    "Fire",
+]
+
+[tool.setuptools]
+packages = { find = { where = ["."] } }
+
+[project.entry-points.console_scripts]
+elegantt = "elegantt.command:main2"

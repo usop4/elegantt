@@ -1,8 +1,7 @@
-rm -r dist
+rm -rf dist
 
-python3 setup.py sdist
-
-python3 setup.py bdist_wheel
+python3 -m pip install --upgrade build twine
+python3 -m build
 
 ls dist
 

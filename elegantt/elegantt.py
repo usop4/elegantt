@@ -390,7 +390,7 @@ class EleGantt:
         except ValueError as e:
             raise ValueError(f"Invalid date format for start or end: start={start}, end={end}") from e
 
-        if end_date and start_date > end_date:
+        if end_date is not None and start_date > end_date:
             raise ValueError(f"Start date {start_date} cannot be after end date {end_date}")
 
         start_pos = (start_date - self.firstday).days
@@ -398,10 +398,9 @@ class EleGantt:
         if start_pos < 0:
             start_pos = 0
 
-        if end_date > self.firstday:
+        end_pos = 0
+        if end_date is not None and end_date > self.firstday:
             end_pos = (end_date - self.firstday).days
-        else:
-            end_pos = 0
 
         bar_color = self.bar_color
         for tag, color in self.tag_color.items():
@@ -409,7 +408,7 @@ class EleGantt:
                 bar_color = color
                 #bar_color = self.tag_color[tag]
 
-        if end_date > self.firstday:
+        if end_date is not None and end_date > self.firstday:
             self.draw.rectangle(
                 [
                     (

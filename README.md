@@ -41,7 +41,7 @@ yum install google-noto-sans-cjk-ttc-fonts.noarch
 
 on Mac
 ```sh
-yum install google-noto-sans-cjk-ttc-fonts.noarch
+brew install --cask font-noto-sans
 ```
 
 ## Usage
