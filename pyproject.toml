@@ -31,5 +31,10 @@ dependencies = [
 [tool.setuptools]
 packages = { find = { where = ["."] } }
 
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
 [project.entry-points.console_scripts]
 elegantt = "elegantt.command:main2"

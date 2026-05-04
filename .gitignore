@@ -1,4 +1,5 @@
 .vscode/
+.venv/
 venv/
 __pycache__/
 elegantt.egg-info/
