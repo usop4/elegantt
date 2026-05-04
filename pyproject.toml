@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "elegantt"
-version = "0.0.11"
+version = "0.0.12"
 description = "This is a gantt chart drawing library"
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.12,<4"
